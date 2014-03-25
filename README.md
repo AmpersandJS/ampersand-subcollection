@@ -44,6 +44,46 @@ var favoriteWidgets = new SubCollection({
 });
 ```
 
+## the options object
+
+The main options object can be passed on init or updated later as a whole using the `.configure` method. Or individual filter/sorting options can be modified.
+
+The main options are as follows:
+
+```javascript
+{
+    where: {
+        modelPropertyName: 'value it should be',
+        thereCanBe: 'many of these' 
+    },
+    // A function that should return true/false
+    // when given a model. You should also set
+    // watched properties if you use custom filter
+    // functions
+    filter: function (model) {
+        return model.isAwesome;
+    },
+    // same as above but in array form
+    filters: [
+        function (model) { ... },
+        function (model) { ... }
+    ],
+    // If you specify custom filter functions
+    // and don't identify which properties you 
+    // care about in the function, your subcollection
+    // won't magically update if you change a property
+    // on an object that would add/remove it from your
+    // sub collection.
+    watched: ['isAwesome'],
+    // You can also specify a limit
+    // this is super useful for paging
+    limit: 50,
+    // ...and an offset. Starting index
+    // for paging.
+    offset: 10,
+}
+```
+
 ## credits
 
 If you like this follow [@HenrikJoreteg](http://twitter.com/henrikjoreteg) on twitter.
