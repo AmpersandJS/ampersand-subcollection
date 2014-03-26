@@ -1,22 +1,22 @@
 var _ = require('underscore');
 var Events = require('backbone-events-standalone');
 var classExtend = require('ampersand-class-extend');
+var underscoreMixins = require('ampersand-collection-underscore-mixin');
 var slice = Array.prototype.slice;
 
 
-function SubCollection(spec) {
+function SubCollection(collection, spec) {
     spec || (spec = {});
-    this.collection = spec.collection;
-    if (!this.collection) throw Error('You must pass a collection');
+    this.collection = collection;
     this._reset();
-    this.watched = spec.watched || [];
+    this._watched = spec.watched || [];
     this._parseFilters(spec);
     this._runFilters();
     this.listenTo(this.collection, 'all', this._onCollectionEvent);
 }
 
 
-_.extend(SubCollection.prototype, Events, {
+_.extend(SubCollection.prototype, Events, underscoreMixins, {
     // add a filter function directly
     addFilter: function (filter) {
         this._addFilter();
@@ -58,16 +58,16 @@ _.extend(SubCollection.prototype, Events, {
 
     // remove filter if found
     _removeFilter: function () {
-        var index = this.filters.indexOf(filter);
+        var index = this._filters.indexOf(filter);
         if (index !== -1) {
-            this.filters.splice(index, 1);
+            this._filters.splice(index, 1);
         }
     },
 
     // clear all filters, reset everything
     _reset: function () {
-        this.filters = [];
-        this.watched = [];
+        this._filters = [];
+        this._watched = [];
         this.models = [];
         this.limit = undefined;
         this.offset = undefined;
@@ -75,17 +75,17 @@ _.extend(SubCollection.prototype, Events, {
 
     // internal method registering new filter function
     _addFilter: function (filter) {
-        this.filters.push(filter);
+        this._filters.push(filter);
     },
 
     // adds a property or array of properties to watch, ensures uniquness.
     _watch: function (item) {
-        this.watched = _.union(this.watched, _.isArray(item) ? item : [item]);
+        this._watched = _.union(this._watched, _.isArray(item) ? item : [item]);
     },
 
     // removes a watched property
     _unwatch: function (item) {
-        this.watched = _.without(this.watched, item);
+        this._watched = _.without(this._watched, item);
     },
 
     _parseFilters: function (spec) {
@@ -119,8 +119,8 @@ _.extend(SubCollection.prototype, Events, {
         var newModels, toAdd, toRemove;
 
         // reduce base model set by applying filters
-        if (this.filters.length) {
-            newModels = _.reduce(this.filters, function (startingArray, filterFunc) {
+        if (this._filters.length) {
+            newModels = _.reduce(this._filters, function (startingArray, filterFunc) {
                 return startingArray.filter(filterFunc);
             }, rootModels);
         } else {
@@ -155,7 +155,7 @@ _.extend(SubCollection.prototype, Events, {
     },
 
     _onCollectionEvent: function (eventName, event) {
-        if (_.contains(this.watched, eventName.split(':')[1]) || _.contains(['add', 'remove'], eventName)) {
+        if (_.contains(this._watched, eventName.split(':')[1]) || _.contains(['add', 'remove'], eventName)) {
             this._runFilters();
         }
     }

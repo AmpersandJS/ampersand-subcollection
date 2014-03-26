@@ -41,17 +41,14 @@ function getBaseCollection() {
 
 test('basic init, length', function (t) {
     var base = getBaseCollection();
-    var sub = new SubCollection({
-        collection: base
-    });
+    var sub = new SubCollection(base);
     t.equal(sub.length, 100);
     t.end();
 });
 
 test('basic `where` filtering', function (t) {
     var base = getBaseCollection();
-    var sub = new SubCollection({
-        collection: base,
+    var sub = new SubCollection(base, {
         where: {
             sweet: true
         }
@@ -62,8 +59,7 @@ test('basic `where` filtering', function (t) {
 
 test('function based filtering', function (t) {
     var base = getBaseCollection();
-    var sub = new SubCollection({
-        collection: base,
+    var sub = new SubCollection(base, {
         filter: function (model) {
             return model.awesomeness > 5;
         }
@@ -75,8 +71,7 @@ test('function based filtering', function (t) {
 
 test('multiple filter functions', function (t) {
     var base = getBaseCollection();
-    var sub = new SubCollection({
-        collection: base,
+    var sub = new SubCollection(base, {
         filters: [
             function (model) {
                 return model.awesomeness > 5;
@@ -92,8 +87,7 @@ test('multiple filter functions', function (t) {
 
 test('mixed filter and `where`', function (t) {
     var base = getBaseCollection();
-    var sub = new SubCollection({
-        collection: base,
+    var sub = new SubCollection(base, {
         filter: function (model) {
             return model.awesomeness > 5;
         },
@@ -107,9 +101,7 @@ test('mixed filter and `where`', function (t) {
 
 test('should sort independent of base', function (t) {
     var base = getBaseCollection();
-    var SuperSub = SubCollection.extend(mixins);
-    var sub = new SuperSub({
-        collection: base,
+    var sub = new SubCollection(base, {
         comparator: 'id'
     });
     t.equal(sub.length, 100);
@@ -119,8 +111,7 @@ test('should sort independent of base', function (t) {
 
 test('should be able to specify/update offset and limit', function (t) {
     var base = getBaseCollection();
-    var sub = new SubCollection({
-        collection: base,
+    var sub = new SubCollection(base, {
         comparator: 'id',
         limit: 10
     });
@@ -139,8 +130,7 @@ test('should be able to specify/update offset and limit', function (t) {
 test('should fire `add` events only if removed items match filter', function (t) {
     t.plan(1);
     var base = getBaseCollection();
-    var sub = new SubCollection({
-        collection: base,
+    var sub = new SubCollection(base, {
         filter: function (model) {
             return model.awesomeness > 5;
         }
@@ -167,8 +157,7 @@ test('should fire `add` events only if removed items match filter', function (t)
 test('should fire `remove` events only if removed items match filter', function (t) {
     t.plan(3);
     var base = getBaseCollection();
-    var sub = new SubCollection({
-        collection: base,
+    var sub = new SubCollection(base, {
         filter: function (model) {
             return model.awesomeness > 5;
         }
@@ -193,9 +182,7 @@ test('should fire `remove` events only if removed items match filter', function 
 test('make sure changes to `where` properties are reflected in sub collections', function (t) {
     t.plan(3);
     var base = getBaseCollection();
-    var SweetCollection = SubCollection.extend(mixins);
-    var sub = new SweetCollection({
-        collection: base,
+    var sub = new SubCollection(base, {
         where: {
             sweet: true
         }
