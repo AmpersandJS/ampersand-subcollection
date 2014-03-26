@@ -17,18 +17,6 @@ function SubCollection(spec) {
 
 
 _.extend(SubCollection.prototype, Events, {
-    // update the total limit of allowed results
-    setLimit: function (limit) {
-        this.limit = limit;
-        this._runFilters();
-    },
-
-    // update offset and fire events accordingly
-    setOffset: function (offset) {
-        this.offset = offset;
-        this._runFilters();
-    },
-
     // add a filter function directly
     addFilter: function (filter) {
         this._addFilter();
@@ -110,8 +98,8 @@ _.extend(SubCollection.prototype, Events, {
             // also make sure we watch all `where` keys
             this._watch(_.keys(spec.where));
         }
-        if (typeof spec.limit === 'number') this.limit = spec.limit;
-        if (typeof spec.offset === 'number') this.offset = spec.offset;
+        if (spec.hasOwnProperty('limit')) this.limit = spec.limit;
+        if (spec.hasOwnProperty('offset')) this.offset = spec.offset;
         if (spec.filter) {
             this._addFilter(spec.filter, false);
         }
@@ -176,6 +164,10 @@ _.extend(SubCollection.prototype, Events, {
 Object.defineProperty(SubCollection.prototype, 'length', {
     get: function () {
         return this.models.length;
+    },
+    // we add a `set` to keep Safari 5.1 from freaking out
+    set: function () {
+        return;
     }
 });
 

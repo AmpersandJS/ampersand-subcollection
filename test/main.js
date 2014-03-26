@@ -126,17 +126,18 @@ test('should be able to specify/update offset and limit', function (t) {
     });
     t.equal(sub.length, 10);
     t.equal(sub.at(0).id, 0);
-    sub.setLimit(5);
+    sub.configure({limit: 5});
     t.equal(sub.length, 5);
-    sub.setOffset(5);
+    sub.configure({offset: 5});
     t.equal(sub.at(0).id, 5);
-    sub.setOffset();
-    sub.setLimit();
+    sub.configure({offset: null});
+    sub.configure({limit: null});
     t.equal(sub.length, 100);
     t.end();
 });
 
-test('should proxy add events from base', function (t) {
+test('should fire `add` events only if removed items match filter', function (t) {
+    t.plan(1);
     var base = getBaseCollection();
     var sub = new SubCollection({
         collection: base,
@@ -144,15 +145,67 @@ test('should proxy add events from base', function (t) {
             return model.awesomeness > 5;
         }
     });
-    var newWidget = new Widget({
-        name: 'newest',
+    var awesomeWidget = new Widget({
+        name: 'awesome',
         id: 999,
         awesomeness: 11,
         sweet: true
     });
+    var lameWidget = new Widget({
+        name: 'lame',
+        id: 1000,
+        awesomeness: 0,
+        sweet: false
+    });
     sub.on('add', function (model) {
-        t.equal(model, newWidget);
+        t.equal(model, awesomeWidget);
         t.end();
     });
-    base.add(newWidget);
+    base.add([lameWidget, awesomeWidget]);
+});
+
+test('should fire `remove` events only if removed items match filter', function (t) {
+    t.plan(3);
+    var base = getBaseCollection();
+    var sub = new SubCollection({
+        collection: base,
+        filter: function (model) {
+            return model.awesomeness > 5;
+        }
+    });
+    // grab a lame widget
+    var lameWidget = base.find(function (model) {
+        return model.awesomeness < 5;
+    });
+    // grab an awesome widget
+    var awesomeWidget = base.find(function (model) {
+        return model.awesomeness > 5;
+    });
+    sub.on('remove', function (model) {
+        t.equal(model, awesomeWidget);
+        t.end();
+    });
+    t.ok(awesomeWidget);
+    t.ok(lameWidget);
+    base.remove([lameWidget, awesomeWidget]);
+});
+
+test('make sure changes to `where` properties are reflected in sub collections', function (t) {
+    t.plan(3);
+    var base = getBaseCollection();
+    var SweetCollection = SubCollection.extend(mixins);
+    var sub = new SweetCollection({
+        collection: base,
+        where: {
+            sweet: true
+        }
+    });
+    var firstSweet = sub.first();
+    sub.on('remove', function (model) {
+        t.equal(model, firstSweet);
+        t.equal(firstSweet.sweet, false);
+        t.end();
+    });
+    t.ok(firstSweet);
+    firstSweet.sweet = false;
 });
