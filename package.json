@@ -1,7 +1,7 @@
 {
   "name": "ampersand-subcollection",
   "description": "Filterable, sortable, proxy of a collection that behaves like a collection.",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "author": "Henrik Joreteg <henrik@andyet.yet>",
   "bugs": {
     "url": "https://github.com/ampersandjs/ampersand-subcollection/issues"
