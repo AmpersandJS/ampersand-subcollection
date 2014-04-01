@@ -56,6 +56,12 @@ _.extend(SubCollection.prototype, Events, underscoreMixins, {
         return this.models[index];
     },
 
+    // proxy `get` method to the underlying collection
+    get: function (query, indexName) {
+        var model = this.collection.get(query, indexName);
+        if (model && this.contains(model)) return model;
+    },
+
     // remove filter if found
     _removeFilter: function () {
         var index = this._filters.indexOf(filter);

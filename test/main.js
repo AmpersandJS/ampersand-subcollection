@@ -1,7 +1,7 @@
 var test = require('tape');
-var Collection = require('ampersand-collection');
-var SubCollection = require('../ampersand-subcollection');
 var mixins = require('ampersand-collection-underscore-mixin');
+var Collection = require('ampersand-collection').extend(mixins);
+var SubCollection = require('../ampersand-subcollection');
 var Model = require('ampersand-state');
 var _ = require('underscore');
 
@@ -195,4 +195,25 @@ test('make sure changes to `where` properties are reflected in sub collections',
     });
     t.ok(firstSweet);
     firstSweet.sweet = false;
+});
+
+test('should be able to `get` a model by id or other index', function (t) {
+    var base = getBaseCollection();
+    var sub = new SubCollection(base, {
+        where: {
+            sweet: true
+        }
+    });
+    var cool = sub.first();
+    var lame = base.find(function (model) {
+        return model.sweet === false;
+    });
+    // sanity checks
+    t.ok(cool.sweet);
+    t.notOk(lame.sweet);
+    t.ok(sub.models.indexOf(lame) === -1);
+    t.ok(base.models.indexOf(lame) !== -1);
+    t.notEqual(sub.get(lame.id), lame);
+    t.equal(sub.get(cool.id), cool);
+    t.end();
 });
