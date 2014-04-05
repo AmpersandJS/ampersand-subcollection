@@ -63,7 +63,7 @@ _.extend(SubCollection.prototype, Events, underscoreMixins, {
     },
 
     // remove filter if found
-    _removeFilter: function () {
+    _removeFilter: function (filter) {
         var index = this._filters.indexOf(filter);
         if (index !== -1) {
             this._filters.splice(index, 1);
@@ -160,9 +160,14 @@ _.extend(SubCollection.prototype, Events, underscoreMixins, {
         this.models = newModels;
     },
 
-    _onCollectionEvent: function (eventName, event) {
-        if (_.contains(this._watched, eventName.split(':')[1]) || _.contains(['add', 'remove'], eventName)) {
+    _onCollectionEvent: function (eventName, model) {
+        // conditions under which we should re-run filters
+        if (_.contains(this._watched, eventName.split(':')[1]) || _.contains(['add', 'remove', 'reset', 'sync'], eventName)) {
             this._runFilters();
+        }
+        // conditions under which we should proxy the events
+        if ((_.contains(['sync', 'invalid', 'destroy']) || eventName.indexOf('change') !== -1) && this.contains(model)) {
+            this.trigger.apply(this, arguments);
         }
     }
 });
@@ -170,10 +175,6 @@ _.extend(SubCollection.prototype, Events, underscoreMixins, {
 Object.defineProperty(SubCollection.prototype, 'length', {
     get: function () {
         return this.models.length;
-    },
-    // we add a `set` to keep Safari 5.1 from freaking out
-    set: function () {
-        return;
     }
 });
 

@@ -217,3 +217,35 @@ test('should be able to `get` a model by id or other index', function (t) {
     t.equal(sub.get(cool.id), cool);
     t.end();
 });
+
+test('should be able to listen for `change:x` events on subcollection', function (t) {
+    t.plan(1);
+    var base = getBaseCollection();
+    var sub = new SubCollection(base, {
+        where: {
+            sweet: true
+        }
+    });
+    sub.on('change:name', function () {
+        t.pass('handler called');
+        t.end();
+    });
+    var cool = sub.first();
+    cool.name = 'new name';
+});
+
+test('should be able to listen for general `change` events on subcollection', function (t) {
+    t.plan(1);
+    var base = getBaseCollection();
+    var sub = new SubCollection(base, {
+        where: {
+            sweet: true
+        }
+    });
+    sub.on('change', function () {
+        t.pass('handler called');
+        t.end();
+    });
+    var cool = sub.first();
+    cool.name = 'new name';
+});
