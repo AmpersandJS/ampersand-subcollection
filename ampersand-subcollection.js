@@ -151,13 +151,13 @@ _.extend(SubCollection.prototype, Events, underscoreMixins, {
             this.trigger('add', model, this);
         }, this);
 
-        // if they contain the same models, but in new order, trigger sort
-        if (toAdd.length === 0 && toRemove.length === 0 && !_.isEqual(existingModels, newModels)) {
-            this.trigger('sort', this);
-        }
-
         // save 'em
         this.models = newModels;
+
+        // if they contain the same models, but in new order, trigger sort
+        if (!_.isEqual(existingModels, newModels)) {
+            this.trigger('sort', this);
+        }
     },
 
     _onCollectionEvent: function (eventName, model) {
