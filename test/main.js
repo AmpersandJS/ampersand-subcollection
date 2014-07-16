@@ -259,3 +259,27 @@ test('should be able to listen for general `change` events on subcollection', fu
     var cool = sub.first();
     cool.name = 'new name';
 });
+
+test('have the correct ordering saved when processing a sort event', function (t) {
+    t.plan(3);
+    var base = getBaseCollection();
+    var sub = new SubCollection(base, {
+        where: {
+            sweet: true
+        },
+        comparator: 'name'
+    });
+
+    var third = sub.at(42);
+
+    third.sweet = false;
+
+    t.notEqual(third.id, sub.at(42).id);
+    t.notOk(sub.get(third.id));
+
+    sub.on('sort', function () {
+        t.equal(third.id, sub.at(42).id);
+    });
+
+    third.sweet = true;
+});
