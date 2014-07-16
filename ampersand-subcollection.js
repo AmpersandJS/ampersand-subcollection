@@ -178,6 +178,12 @@ Object.defineProperty(SubCollection.prototype, 'length', {
     }
 });
 
+Object.defineProperty(SubCollection.prototype, 'isCollection', {
+    get: function () {
+        return true;
+    }
+});
+
 SubCollection.extend = classExtend;
 
 module.exports = SubCollection;

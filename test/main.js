@@ -46,6 +46,16 @@ test('basic init, length', function (t) {
     t.end();
 });
 
+test('it should report as being a collection', function (t) {
+    var base = getBaseCollection();
+    var sub = new SubCollection(base);
+    t.ok(sub.isCollection);
+
+    sub.isCollection = false;
+    t.ok(sub.isCollection);
+    t.end();
+});
+
 test('basic `where` filtering', function (t) {
     var base = getBaseCollection();
     var sub = new SubCollection(base, {
