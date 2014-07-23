@@ -7,10 +7,10 @@
     "url": "https://github.com/ampersandjs/ampersand-subcollection/issues"
   },
   "dependencies": {
-    "ampersand-class-extend": "~0.1.3",
-    "ampersand-collection-underscore-mixin": "~0.1.0",
-    "backbone-events-standalone": "~0.2.1",
-    "underscore": "~1.6.0"
+    "ampersand-class-extend": "^1.0.0",
+    "ampersand-collection-underscore-mixin": "^1.0.0",
+    "backbone-events-standalone": "0.2.2",
+    "underscore": "^1.6.0"
   },
   "devDependencies": {
     "ampersand-collection": "~0.2.3",
