@@ -86,9 +86,11 @@ test('remove a filter', function (t) {
     };
 
     sub.addFilter(isPartiallyAwesome);
-    sub.removeFilter(isPartiallyAwesome);
+    t.equal(sub.length, 10);
 
+    sub.removeFilter(isPartiallyAwesome);
     t.equal(sub.length, 100);
+
     t.end();
 });
 
