@@ -19,7 +19,7 @@ function SubCollection(collection, spec) {
 _.extend(SubCollection.prototype, Events, underscoreMixins, {
     // add a filter function directly
     addFilter: function (filter) {
-        this._addFilter();
+        this._addFilter(filter);
         this._runFilters();
     },
 
