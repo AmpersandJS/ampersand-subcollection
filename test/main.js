@@ -67,6 +67,31 @@ test('basic `where` filtering', function (t) {
     t.end();
 });
 
+test('add a filter after init', function (t) {
+    var base = getBaseCollection();
+    var sub = new SubCollection(base);
+    sub.addFilter(function (model) {
+        return model.awesomeness === 5;
+    });
+
+    t.equal(sub.length, 10);
+    t.end();
+});
+
+test('remove a filter', function (t) {
+    var base = getBaseCollection();
+    var sub = new SubCollection(base);
+    var isPartiallyAwesome = function (model) {
+        return model.awesomeness === 5;
+    };
+
+    sub.addFilter(isPartiallyAwesome);
+    sub.removeFilter(isPartiallyAwesome);
+
+    t.equal(sub.length, 100);
+    t.end();
+});
+
 test('function based filtering', function (t) {
     var base = getBaseCollection();
     var sub = new SubCollection(base, {
