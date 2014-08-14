@@ -29,8 +29,7 @@ _.extend(SubCollection.prototype, Events, underscoreMixins, {
 
     // clears filters fires events for changes
     clearFilters: function () {
-        this._reset();
-        this._runFilters();
+        this.swapFilters();
     },
 
     // Swap out a set of old filters with a set of
@@ -39,6 +38,7 @@ _.extend(SubCollection.prototype, Events, underscoreMixins, {
         var self = this;
 
         if (!oldFilters) {
+            this._reset();
             oldFilters = [];
         } else if (!_.isArray(oldFilters)) {
             oldFilters = [oldFilters];
