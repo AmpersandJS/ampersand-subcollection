@@ -19,14 +19,12 @@ function SubCollection(collection, spec) {
 _.extend(SubCollection.prototype, Events, underscoreMixins, {
     // add a filter function directly
     addFilter: function (filter) {
-        this._addFilter(filter);
-        this._runFilters();
+        this.swapFilters([filter], []);
     },
 
     // remove filter function directly
     removeFilter: function (filter) {
-        this._removeFilter(filter);
-        this._runFilters();
+        this.swapFilters([], [filter]);
     },
 
     // clears filters fires events for changes
@@ -37,7 +35,7 @@ _.extend(SubCollection.prototype, Events, underscoreMixins, {
 
     // Swap out a set of old filters with a set of
     // new filters
-    swapFilters: function (oldFilters, newFilters) {
+    swapFilters: function (newFilters, oldFilters) {
         var self = this;
 
         if (!oldFilters) {
