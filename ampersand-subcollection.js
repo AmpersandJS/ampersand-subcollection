@@ -35,6 +35,34 @@ _.extend(SubCollection.prototype, Events, underscoreMixins, {
         this._runFilters();
     },
 
+    // Swap out a set of old filters with a set of
+    // new filters
+    swapFilters: function (oldFilters, newFilters) {
+        var self = this;
+
+        if (!oldFilters) {
+            oldFilters = [];
+        } else if (!_.isArray(oldFilters)) {
+            oldFilters = [oldFilters];
+        }
+
+        if (!newFilters) {
+            newFilters = [];
+        } else if (!_.isArray(newFilters)) {
+            newFilters = [newFilters];
+        }
+
+        oldFilters.forEach(function (filter) {
+            self._removeFilter(filter);
+        });
+
+        newFilters.forEach(function (filter) {
+            self._addFilter(filter);
+        });
+
+        this._runFilters();
+    },
+
     // Update sub collection config, if `clear`
     // then clear existing filters before start.
     // This takes all the same filter arguments
