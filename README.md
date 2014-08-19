@@ -80,6 +80,21 @@ Removes all filter functions and resets everything. After calling this, the subc
 
 The only thing that does *not* get cleared is your `comparator` method if you have one.
 
+### .swapFilters(newFilters, [oldFilters])
+
+* `newFilters` {Function} or array of filter functions to be applied to the collection.
+* `oldFilters` {Function} or array of filter functions to be removed from the collection. If `oldFilters` is undefined, then it is assumed to be the set of currently active filters.
+
+Replaces a set of existing filter functions with a set of new filters, and does not apply the results of the new filter combination until all have been added and removed.
+
+For example:
+
+```javascript
+.swapFilters(newFilter, []) // Same as .addFilter(newFilter)
+.swapFilters([], oldFilter) // Same as .removeFilter(oldFilter)
+```
+
+
 ### .at(index)
 
 * `index` {Number} returns model as specified index in the subcollection.
