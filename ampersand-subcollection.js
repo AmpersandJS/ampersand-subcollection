@@ -143,6 +143,9 @@ _.extend(SubCollection.prototype, Events, underscoreMixins, {
         toAdd = _.difference(newModels, existingModels);
         toRemove = _.difference(existingModels, newModels);
 
+        // save 'em
+        this.models = newModels;
+        
         _.each(toRemove, function (model) {
             this.trigger('remove', model, this);
         }, this);
@@ -150,9 +153,6 @@ _.extend(SubCollection.prototype, Events, underscoreMixins, {
         _.each(toAdd, function (model) {
             this.trigger('add', model, this);
         }, this);
-
-        // save 'em
-        this.models = newModels;
 
         // if they contain the same models, but in new order, trigger sort
         if (!_.isEqual(existingModels, newModels)) {
