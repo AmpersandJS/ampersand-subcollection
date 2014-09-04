@@ -15,7 +15,8 @@
   "devDependencies": {
     "ampersand-collection": "~0.2.3",
     "ampersand-state": "~0.3.1",
-    "precommit-hook": "~0.3.10",
+    "jshint": "^2.5.5",
+    "precommit-hook": "^1.0.7",
     "tap-spec": "^0.2.1",
     "tape": "~2.12.0"
   },
@@ -32,7 +33,7 @@
     "url": "git://github.com/ampersandjs/ampersand-subcollection"
   },
   "scripts": {
-    "test": "node test/main.js | ./node_modules/.bin/tap-spec"
+    "test": "node test/main.js | tap-spec"
   },
   "testling": {
     "files": "test/*.js",
