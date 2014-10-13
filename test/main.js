@@ -216,6 +216,27 @@ test('should fire `remove` events only if removed items match filter', function 
     base.remove([lameWidget, awesomeWidget]);
 });
 
+test('should fire `add` and `remove` events after models are updated', function (t) {
+    t.plan(2);
+    var base = getBaseCollection();
+    var sub = new SubCollection(base);
+    var awesomeWidget = new Widget({
+        name: 'awesome',
+        id: 999,
+        awesomeness: 11,
+        sweet: true
+    });
+    sub.on('add', function () {
+        t.equal(sub.models.length, 101);
+    });
+    sub.on('remove', function () {
+        t.equal(sub.models.length, 100);
+        t.end();
+    });
+    base.add(awesomeWidget);
+    base.remove(awesomeWidget);
+});
+
 test('make sure changes to `where` properties are reflected in sub collections', function (t) {
     t.plan(3);
     var base = getBaseCollection();
