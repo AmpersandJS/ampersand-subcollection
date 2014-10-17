@@ -114,6 +114,10 @@ module.exports = SubCollection.extend({
 This is done by using: [ampersand-class-extend](https://github.com/AmpersandJS/ampersand-class-extend)
 
 
+## changelog
+
+- 1.4.5 fixed bug where passing the `reset` option to `configure()` wasn't working.
+
 ## credits
 
 If you like this follow [@HenrikJoreteg](http://twitter.com/henrikjoreteg) on twitter.
