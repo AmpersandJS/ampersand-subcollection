@@ -310,3 +310,41 @@ test('have the correct ordering saved when processing a sort event', function (t
 
     third.sweet = true;
 });
+
+test('reset works correctly/efficiently when passed to configure', function (t) {
+    var base = getBaseCollection();
+    var sub = new SubCollection(base, {
+        where: {
+            sweet: true
+        }
+    });
+    var itemsRemoved = [];
+    var itemsAdded = [];
+    var awesomeIds = sub.pluck('id');
+
+    t.equal(sub.length, 50, 'should be 50 that match initial filter');
+
+    sub.on('remove', function (model) {
+        itemsRemoved.push(model);
+    });
+    sub.on('add', function (model) {
+        itemsAdded.push(model);
+    });
+
+    sub.configure({
+        where: {
+            sweet: true,
+            awesomeness: 6
+        }
+    }, true);
+
+    t.equal(sub.length, 10, 'should be 10 that match second filter');
+    t.equal(itemsRemoved.length, 40, 'five of the items should have been removed');
+    t.equal(itemsAdded.length, 0, 'nothing should have been added');
+
+    t.ok(_.every(itemsRemoved, function (item) {
+        return item.sweet === true && item.awesomeness !== 6;
+    }), 'every item removed should have awesomeness not 6 and be sweet: true');
+
+    t.end();
+});

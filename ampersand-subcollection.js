@@ -46,7 +46,7 @@ _.extend(SubCollection.prototype, Events, underscoreMixins, {
     //   limit: 20
     // }
     configure: function (opts, clear) {
-        if (clear) this._reset();
+        if (clear) this._resetFilters();
         this._parseFilters(opts);
         this._runFilters();
     },
@@ -72,9 +72,14 @@ _.extend(SubCollection.prototype, Events, underscoreMixins, {
 
     // clear all filters, reset everything
     _reset: function () {
+        this.models = [];
+        this._resetFilters();
+    },
+
+    // just reset filters, no model changes
+    _resetFilters: function () {
         this._filters = [];
         this._watched = [];
-        this.models = [];
         this.limit = undefined;
         this.offset = undefined;
     },
