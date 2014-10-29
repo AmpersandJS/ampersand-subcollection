@@ -369,3 +369,42 @@ test('reset works correctly/efficiently when passed to configure', function (t) 
 
     t.end();
 });
+
+test('it triggers sort events if comparator is defined and sort changes', function (t) {
+    var base = getBaseCollection();
+    var sub = new SubCollection(base, {
+        comparator: 'awesomeness'
+    });
+
+    var newWidget = new Widget({
+        name: 'lame',
+        id: 1000,
+        awesomeness: 0,
+        sweet: false
+    });
+
+    sub.on('sort', function () {
+        t.end();
+    });
+
+    base.add(newWidget);
+});
+
+test('it does not trigger sort events if no comparator is defined', function (t) {
+    var base = getBaseCollection();
+    var sub = new SubCollection(base);
+
+    var newWidget = new Widget({
+        name: 'lame',
+        id: 1000,
+        awesomeness: 0,
+        sweet: false
+    });
+
+    sub.on('sort', function () {
+        t.ok(false, 'Sort should not have been called');
+    });
+
+    base.add(newWidget);
+    t.end();
+});
