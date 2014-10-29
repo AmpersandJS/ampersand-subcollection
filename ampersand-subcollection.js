@@ -1,3 +1,4 @@
+/*$AMPERSAND_VERSION*/
 var _ = require('underscore');
 var Events = require('backbone-events-standalone');
 var classExtend = require('ampersand-class-extend');
