@@ -146,6 +146,7 @@ _.extend(SubCollection.prototype, Events, underscoreMixins, {
         }
         if (spec.comparator) {
             this.comparator = spec.comparator;
+            if (typeof this.comparator === 'string') this._watch(this.comparator);
         }
     },
 
