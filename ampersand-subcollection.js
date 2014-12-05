@@ -81,6 +81,9 @@ _.extend(SubCollection.prototype, Events, underscoreMixins, {
             delete this.comparator;
             this._resetFilters();
         }
+        _.extend(this._spec, opts);
+        this._setupComparator(opts.comparator);
+        if (opts.watched) this._watch(opts.watched);
         this._parseFilters(opts);
         this._runFilters();
     },
