@@ -1,3 +1,4 @@
+/*$AMPERSAND_VERSION*/
 var _ = require('underscore');
 var Events = require('backbone-events-standalone');
 var classExtend = require('ampersand-class-extend');
@@ -72,7 +73,7 @@ _.extend(SubCollection.prototype, Events, underscoreMixins, {
     //   limit: 20
     // }
     configure: function (opts, clear) {
-        if (clear) this._reset();
+        if (clear) this._resetFilters();
         this._parseFilters(opts);
         this._runFilters();
     },
@@ -98,9 +99,14 @@ _.extend(SubCollection.prototype, Events, underscoreMixins, {
 
     // clear all filters, reset everything
     _reset: function () {
+        this.models = [];
+        this._resetFilters();
+    },
+
+    // just reset filters, no model changes
+    _resetFilters: function () {
         this._filters = [];
         this._watched = [];
-        this.models = [];
         this.limit = undefined;
         this.offset = undefined;
     },
@@ -169,6 +175,9 @@ _.extend(SubCollection.prototype, Events, underscoreMixins, {
         toAdd = _.difference(newModels, existingModels);
         toRemove = _.difference(existingModels, newModels);
 
+        // save 'em
+        this.models = newModels;
+        
         _.each(toRemove, function (model) {
             this.trigger('remove', model, this);
         }, this);
@@ -176,9 +185,6 @@ _.extend(SubCollection.prototype, Events, underscoreMixins, {
         _.each(toAdd, function (model) {
             this.trigger('add', model, this);
         }, this);
-
-        // save 'em
-        this.models = newModels;
 
         // if they contain the same models, but in new order, trigger sort
         if (!_.isEqual(existingModels, newModels)) {

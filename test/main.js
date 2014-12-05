@@ -254,6 +254,27 @@ test('should fire `remove` events only if removed items match filter', function 
     base.remove([lameWidget, awesomeWidget]);
 });
 
+test('should fire `add` and `remove` events after models are updated', function (t) {
+    t.plan(2);
+    var base = getBaseCollection();
+    var sub = new SubCollection(base);
+    var awesomeWidget = new Widget({
+        name: 'awesome',
+        id: 999,
+        awesomeness: 11,
+        sweet: true
+    });
+    sub.on('add', function () {
+        t.equal(sub.models.length, 101);
+    });
+    sub.on('remove', function () {
+        t.equal(sub.models.length, 100);
+        t.end();
+    });
+    base.add(awesomeWidget);
+    base.remove(awesomeWidget);
+});
+
 test('make sure changes to `where` properties are reflected in sub collections', function (t) {
     t.plan(3);
     var base = getBaseCollection();
@@ -347,4 +368,42 @@ test('have the correct ordering saved when processing a sort event', function (t
     });
 
     third.sweet = true;
+});
+
+test('reset works correctly/efficiently when passed to configure', function (t) {
+    var base = getBaseCollection();
+    var sub = new SubCollection(base, {
+        where: {
+            sweet: true
+        }
+    });
+    var itemsRemoved = [];
+    var itemsAdded = [];
+    var awesomeIds = sub.pluck('id');
+
+    t.equal(sub.length, 50, 'should be 50 that match initial filter');
+
+    sub.on('remove', function (model) {
+        itemsRemoved.push(model);
+    });
+    sub.on('add', function (model) {
+        itemsAdded.push(model);
+    });
+
+    sub.configure({
+        where: {
+            sweet: true,
+            awesomeness: 6
+        }
+    }, true);
+
+    t.equal(sub.length, 10, 'should be 10 that match second filter');
+    t.equal(itemsRemoved.length, 40, 'five of the items should have been removed');
+    t.equal(itemsAdded.length, 0, 'nothing should have been added');
+
+    t.ok(_.every(itemsRemoved, function (item) {
+        return item.sweet === true && item.awesomeness !== 6;
+    }), 'every item removed should have awesomeness not 6 and be sweet: true');
+
+    t.end();
 });
