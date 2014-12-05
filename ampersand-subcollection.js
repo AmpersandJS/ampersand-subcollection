@@ -20,19 +20,45 @@ function SubCollection(collection, spec) {
 _.extend(SubCollection.prototype, Events, underscoreMixins, {
     // add a filter function directly
     addFilter: function (filter) {
-        this._addFilter(filter);
-        this._runFilters();
+        this.swapFilters([filter], []);
     },
 
     // remove filter function directly
     removeFilter: function (filter) {
-        this._removeFilter(filter);
-        this._runFilters();
+        this.swapFilters([], [filter]);
     },
 
     // clears filters fires events for changes
     clearFilters: function () {
         this._reset();
+        this._runFilters();
+    },
+
+    // Swap out a set of old filters with a set of
+    // new filters
+    swapFilters: function (newFilters, oldFilters) {
+        var self = this;
+
+        if (!oldFilters) {
+            oldFilters = this._filters;
+        } else if (!_.isArray(oldFilters)) {
+            oldFilters = [oldFilters];
+        }
+
+        if (!newFilters) {
+            newFilters = [];
+        } else if (!_.isArray(newFilters)) {
+            newFilters = [newFilters];
+        }
+
+        oldFilters.forEach(function (filter) {
+            self._removeFilter(filter);
+        });
+
+        newFilters.forEach(function (filter) {
+            self._addFilter(filter);
+        });
+
         this._runFilters();
     },
 

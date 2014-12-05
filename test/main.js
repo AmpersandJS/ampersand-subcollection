@@ -94,6 +94,44 @@ test('remove a filter', function (t) {
     t.end();
 });
 
+test('swap filters', function (t) {
+    var base = getBaseCollection();
+    var sub = new SubCollection(base);
+    var isPartiallyAwesome = function (model) {
+        return model.awesomeness === 5;
+    };
+    var isSweet = function (model) {
+        return model.sweet;
+    };
+
+    sub.addFilter(isPartiallyAwesome);
+    t.equal(sub.length, 10);
+
+    sub.swapFilters(isSweet, isPartiallyAwesome);
+    t.equal(sub.length, 50);
+
+    t.end();
+});
+
+test('swap all filters', function (t) {
+    var base = getBaseCollection();
+    var sub = new SubCollection(base);
+    var isPartiallyAwesome = function (model) {
+        return model.awesomeness === 5;
+    };
+    var isSweet = function (model) {
+        return model.sweet;
+    };
+
+    sub.addFilter(isPartiallyAwesome);
+    t.equal(sub.length, 10);
+
+    sub.swapFilters(isSweet);
+    t.equal(sub.length, 50);
+
+    t.end();
+});
+
 test('function based filtering', function (t) {
     var base = getBaseCollection();
     var sub = new SubCollection(base, {
