@@ -7,10 +7,12 @@ var slice = Array.prototype.slice;
 
 
 function SubCollection(collection, spec) {
-    spec || (spec = {});
+    this._spec = (spec || (spec = {}));
     this.collection = collection;
     this._reset();
-    this._watched = spec.watched || [];
+
+    this._setupComparator(spec.comparator);
+    this._watch(spec.watched || []);
     this._parseFilters(spec);
     this._runFilters();
     this.listenTo(this.collection, 'all', this._onCollectionEvent);
@@ -107,6 +109,8 @@ _.extend(SubCollection.prototype, Events, underscoreMixins, {
     _resetFilters: function () {
         this._filters = [];
         this._watched = [];
+        if (this._spec.comparator) this._setupComparator(this._spec.comparator);
+        if (this._spec.watched) this._watch(this._spec.watched);
         this.limit = undefined;
         this.offset = undefined;
     },
@@ -126,6 +130,20 @@ _.extend(SubCollection.prototype, Events, underscoreMixins, {
         this._watched = _.without(this._watched, item);
     },
 
+    // adds comparator and adds watch for it if it's a string
+    _setupComparator: function (comparator) {
+        if (comparator) {
+            this.comparator = comparator;
+            if (typeof comparator !== 'string') {
+                return;
+            }
+            this._spec.watched = this._spec.watched || (this._spec.watched = []);
+            if (this._spec.watched.indexOf(comparator) === -1) {
+                this._spec.watched.push(comparator);
+            }
+        }
+    },
+
     _parseFilters: function (spec) {
         if (spec.where) {
             _.each(spec.where, function (value, item) {
@@ -143,10 +161,6 @@ _.extend(SubCollection.prototype, Events, underscoreMixins, {
         }
         if (spec.filters) {
             spec.filters.forEach(this._addFilter, this);
-        }
-        if (spec.comparator) {
-            this.comparator = spec.comparator;
-            if (typeof this.comparator === 'string') this._watch(this.comparator);
         }
     },
 
