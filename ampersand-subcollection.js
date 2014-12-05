@@ -75,7 +75,12 @@ _.extend(SubCollection.prototype, Events, underscoreMixins, {
     //   limit: 20
     // }
     configure: function (opts, clear) {
-        if (clear) this._resetFilters();
+
+        if (clear) {
+            this._spec = {};
+            delete this.comparator;
+            this._resetFilters();
+        }
         this._parseFilters(opts);
         this._runFilters();
     },
