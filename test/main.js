@@ -371,8 +371,11 @@ test('have the correct ordering saved when processing a sort event', function (t
 });
 
 test('reset works correctly/efficiently when passed to configure', function (t) {
+    t.plan(7);
+
     var base = getBaseCollection();
     var sub = new SubCollection(base, {
+        comparator: 'name',
         where: {
             sweet: true
         }
@@ -382,6 +385,7 @@ test('reset works correctly/efficiently when passed to configure', function (t) 
     var awesomeIds = sub.pluck('id');
 
     t.equal(sub.length, 50, 'should be 50 that match initial filter');
+    t.same(sub._watched, ['name', 'sweet'], 'comparator and where keys should be watched');
 
     sub.on('remove', function (model) {
         itemsRemoved.push(model);
@@ -391,6 +395,7 @@ test('reset works correctly/efficiently when passed to configure', function (t) 
     });
 
     sub.configure({
+        watched: ['id'],
         where: {
             sweet: true,
             awesomeness: 6
@@ -400,10 +405,52 @@ test('reset works correctly/efficiently when passed to configure', function (t) 
     t.equal(sub.length, 10, 'should be 10 that match second filter');
     t.equal(itemsRemoved.length, 40, 'five of the items should have been removed');
     t.equal(itemsAdded.length, 0, 'nothing should have been added');
+    t.same(sub._watched, ['id', 'sweet', 'awesomeness'], 'only where keys and new watches should be watched');
 
     t.ok(_.every(itemsRemoved, function (item) {
         return item.sweet === true && item.awesomeness !== 6;
     }), 'every item removed should have awesomeness not 6 and be sweet: true');
 
+    t.end();
+});
+
+test('_watched contains members of spec.watched but is not spec.watched', function (t) {
+    t.plan(3);
+    var watched = ['name', 'awesomeness'];
+    var comparator = 'sweet';
+    var base = getBaseCollection();
+    var sub = new SubCollection(base, {
+        limit: 10,
+        comparator: comparator,
+        watched: watched,
+        filter: function (item) {
+            return item.awesomeness > 5 || item.name > 'd';
+        }
+    });
+
+    t.notEqual(sub._watched, watched, '_watched should not be the same array as spec.watched');
+    t.same(sub._watched, watched, '_watched should contain spec.watched members');
+    t.notEqual(watched.indexOf(comparator), -1, 'string spec.comparator is added to spec.watched');
+    t.end();
+});
+
+test('_watched is reset to spec.watched when _resetFilters is called', function (t) {
+    t.plan(2);
+    var comparator = 'sweet';
+    var where = {
+        awesomeness: 5,
+        name: 'b'
+    };
+    var base = getBaseCollection();
+    var sub = new SubCollection(base, {
+        comparator: comparator,
+        where: where
+    });
+
+    t.same(sub._watched, sub._spec.watched.concat(_.keys(where)), '_watched should contain spec.watched members');
+
+    sub._resetFilters();
+
+    t.same(sub._watched, sub._spec.watched, '_resetFilters removes where keys from _watched');
     t.end();
 });
