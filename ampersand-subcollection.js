@@ -173,7 +173,11 @@ _.extend(SubCollection.prototype, Events, underscoreMixins, {
         if (this.comparator) newModels = _.sortBy(newModels, this.comparator);
 
         // trim it to length
-        if (this.limit || this.offset) newModels = newModels.slice(offset, this.limit + offset);
+        if (this.limit || this.offset) {
+            // Cache a reference to the full filtered set to allow this.filtered.length. Ref: #6
+            this.filtered = newModels;
+            newModels = newModels.slice(offset, this.limit + offset);
+        }
 
         // now we've got our new models time to compare
         toAdd = _.difference(newModels, existingModels);
