@@ -130,7 +130,6 @@ _.extend(SubCollection.prototype, Events, underscoreMixins, {
 
     // removes a watched property
     _unwatch: function (item) {
-        this._watched = _.without(this._watched, item);
         this._watched = _.difference(this._watched, _.isArray(item) ? item : [item]);
     },
 
