@@ -7,11 +7,11 @@ var slice = Array.prototype.slice;
 
 
 function SubCollection(collection, spec) {
-    this._spec = (spec || (spec = {}));
+    this.reset();
     this.collection = collection;
-    this._reset();
 
     this._setupComparator(spec.comparator);
+    this._spec = (spec || (spec = this._spec));
     this._watch(spec.watched || []);
     this._parseFilters(spec);
     this._runFilters();
@@ -32,7 +32,7 @@ _.extend(SubCollection.prototype, Events, underscoreMixins, {
 
     // clears filters fires events for changes
     clearFilters: function () {
-        this._reset();
+        this._resetFilters();
         this._runFilters();
     },
 
@@ -65,7 +65,7 @@ _.extend(SubCollection.prototype, Events, underscoreMixins, {
     },
 
     // Update sub collection config, if `clear`
-    // then clear existing filters before start.
+    // then clear existing spec before start.
     // This takes all the same filter arguments
     // as the init function. So you can pass:
     // {
@@ -75,12 +75,7 @@ _.extend(SubCollection.prototype, Events, underscoreMixins, {
     //   limit: 20
     // }
     configure: function (opts, clear) {
-
-        if (clear) {
-            this._spec = {};
-            delete this.comparator;
-            this._resetFilters();
-        }
+        if (clear) this.reset();
         _.extend(this._spec, opts);
         this._setupComparator(opts.comparator);
         if (opts.watched) this._watch(opts.watched);
@@ -108,8 +103,11 @@ _.extend(SubCollection.prototype, Events, underscoreMixins, {
     },
 
     // clear all filters, reset everything
-    _reset: function () {
+    reset: function () {
+        this._spec = {};
         this.models = [];
+        this._watched = [];
+        this.comparator = undefined;
         this._resetFilters();
     },
 
