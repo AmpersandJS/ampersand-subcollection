@@ -9,9 +9,8 @@ var slice = Array.prototype.slice;
 function SubCollection(collection, spec) {
     this.reset();
     this.collection = collection;
-
-    this._setupComparator(spec.comparator);
     this._spec = (spec || (spec = this._spec));
+    if (spec.comparator) this.comparator = spec.comparator;
     this._watch(spec.watched || []);
     this._parseFilters(spec);
     this._runFilters();
@@ -77,7 +76,7 @@ _.extend(SubCollection.prototype, Events, underscoreMixins, {
     configure: function (opts, clear) {
         if (clear) this.reset();
         _.extend(this._spec, opts);
-        this._setupComparator(opts.comparator);
+        if (opts.comparator) this.comparator = opts.comparator;
         if (opts.watched) this._watch(opts.watched);
         this._parseFilters(opts);
         this._runFilters();
@@ -114,9 +113,7 @@ _.extend(SubCollection.prototype, Events, underscoreMixins, {
     // just reset filters, no model changes
     _resetFilters: function () {
         this._filters = [];
-        this._watched = [];
-        if (this._spec.comparator) this._setupComparator(this._spec.comparator);
-        if (this._spec.watched) this._watch(this._spec.watched);
+        this._unwatch(_.keys(this._spec.where));
         this.limit = undefined;
         this.offset = undefined;
     },
@@ -134,20 +131,7 @@ _.extend(SubCollection.prototype, Events, underscoreMixins, {
     // removes a watched property
     _unwatch: function (item) {
         this._watched = _.without(this._watched, item);
-    },
-
-    // adds comparator and adds watch for it if it's a string
-    _setupComparator: function (comparator) {
-        if (comparator) {
-            this.comparator = comparator;
-            if (typeof comparator !== 'string') {
-                return;
-            }
-            this._spec.watched = this._spec.watched || (this._spec.watched = []);
-            if (this._spec.watched.indexOf(comparator) === -1) {
-                this._spec.watched.push(comparator);
-            }
-        }
+        this._watched = _.difference(this._watched, _.isArray(item) ? item : [item]);
     },
 
     _parseFilters: function (spec) {
@@ -214,8 +198,9 @@ _.extend(SubCollection.prototype, Events, underscoreMixins, {
     },
 
     _onCollectionEvent: function (eventName, model) {
+        var propName = eventName.split(':')[1];
         // conditions under which we should re-run filters
-        if (_.contains(this._watched, eventName.split(':')[1]) || _.contains(['add', 'remove', 'reset', 'sync'], eventName)) {
+        if (propName === this.comparator || _.contains(this._watched, propName) || _.contains(['add', 'remove', 'reset', 'sync'], eventName)) {
             this._runFilters();
         }
         // conditions under which we should proxy the events
