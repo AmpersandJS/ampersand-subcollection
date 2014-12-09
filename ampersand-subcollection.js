@@ -7,11 +7,9 @@ var slice = Array.prototype.slice;
 
 
 function SubCollection(collection, spec) {
-    this.reset();
     this.collection = collection;
-    this._spec = (spec || (spec = this._spec));
-    this._parseSpec(spec);
-    this._runFilters();
+    this.models = [];
+    this.configure(spec || {}, true);
     this.listenTo(this.collection, 'all', this._onCollectionEvent);
 }
 
@@ -72,7 +70,7 @@ _.extend(SubCollection.prototype, Events, underscoreMixins, {
     //   limit: 20
     // }
     configure: function (opts, clear) {
-        if (clear) this.reset();
+        if (clear) this._resetFilters();
         _.extend(this._spec, opts);
         this._parseSpec(opts);
         this._runFilters();
@@ -99,17 +97,15 @@ _.extend(SubCollection.prototype, Events, underscoreMixins, {
 
     // clear all filters, reset everything
     reset: function () {
-        this._spec = {};
-        this.models = [];
-        this._watched = [];
-        this.comparator = undefined;
-        this._resetFilters();
+        this.comparator = this.collection.comparator;
+        this.configure({}, true);
     },
 
     // just reset filters, no model changes
     _resetFilters: function () {
         this._filters = [];
-        this._unwatch(_.keys(this._spec.where));
+        this._watched = [];
+        this._spec = {};
         this.limit = undefined;
         this.offset = undefined;
     },
@@ -144,7 +140,7 @@ _.extend(SubCollection.prototype, Events, underscoreMixins, {
         if (spec.hasOwnProperty('limit')) this.limit = spec.limit;
         if (spec.hasOwnProperty('offset')) this.offset = spec.offset;
         if (spec.filter) {
-            this._addFilter(spec.filter, false);
+            this._addFilter(spec.filter);
         }
         if (spec.filters) {
             spec.filters.forEach(this._addFilter, this);
@@ -192,7 +188,7 @@ _.extend(SubCollection.prototype, Events, underscoreMixins, {
             this.trigger('add', model, this);
         }, this);
 
-        // if they contain the same models, but in new order, trigger sort
+        // unless we have the same models in same order trigger `sort`
         if (!_.isEqual(existingModels, newModels)) {
             this.trigger('sort', this);
         }

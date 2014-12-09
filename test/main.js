@@ -371,8 +371,6 @@ test('have the correct ordering saved when processing a sort event', function (t
 });
 
 test('reset works correctly/efficiently when passed to configure', function (t) {
-    t.plan(7);
-
     var base = getBaseCollection();
     var sub = new SubCollection(base, {
         where: {
@@ -381,10 +379,8 @@ test('reset works correctly/efficiently when passed to configure', function (t) 
     });
     var itemsRemoved = [];
     var itemsAdded = [];
-    var awesomeIds = sub.pluck('id');
-
+    
     t.equal(sub.length, 50, 'should be 50 that match initial filter');
-    t.same(sub._watched, ['sweet'], 'where keys should be watched');
 
     sub.on('remove', function (model) {
         itemsRemoved.push(model);
@@ -394,17 +390,15 @@ test('reset works correctly/efficiently when passed to configure', function (t) 
     });
 
     sub.configure({
-        watched: ['id'],
         where: {
             sweet: true,
             awesomeness: 6
         }
-    });
+    }, true);
 
     t.equal(sub.length, 10, 'should be 10 that match second filter');
-    t.equal(itemsRemoved.length, 40, 'five of the items should have been removed');
+    t.equal(itemsRemoved.length, 40, '10 of the items should have been removed');
     t.equal(itemsAdded.length, 0, 'nothing should have been added');
-    t.same(sub._watched.sort(), ['id', 'sweet', 'awesomeness'].sort(), 'only where keys and new watches should be watched');
 
     t.ok(_.every(itemsRemoved, function (item) {
         return item.sweet === true && item.awesomeness !== 6;
@@ -469,5 +463,97 @@ test('string comparator causes _runFilters to be called when comparator prop cha
     sub._runFilters = function () { filtersRan++; };
     sub.models.forEach(function (model) { model.sweet = !model.sweet; });
     t.equal(filtersRan, sub.models.length, '_runFilters called once for each model');
+    t.end();
+});
+
+test('reset', function (t) {
+    var base = getBaseCollection();
+    var sub = new SubCollection(base, {
+        where: {
+            sweet: true
+        },
+        comparator: 'id',
+        filter: function (model) {
+            return model.awesomeness === 6;
+        }
+    });
+
+    var itemsRemoved = [];
+    var itemsAdded = [];
+    var sortTriggered = 0;
+
+    t.equal(sub.length, 10, 'should be 10 that match initial filters');
+
+    sub.on('remove', function (model) {
+        itemsRemoved.push(model);
+    });
+    sub.on('add', function (model) {
+        itemsAdded.push(model);
+    });
+    sub.on('sort', function () {
+        sortTriggered++;
+    });
+
+    sub.reset();
+
+    t.equal(sub.length, base.length, 'should be same as base length');
+    t.equal(itemsAdded.length, 90, '90 should have been added back');
+    t.equal(itemsRemoved.length, 0, '0 should have been removed');
+
+    t.deepEqual(sub._watched, [], 'should not be watching any properties');
+    t.equal(sub.comparator, 'awesomeness', 'should have parent\'s comparator');
+    t.equal(sortTriggered, 1, 'should have triggered a `sort`');
+
+    t.deepEqual(_.pluck(sub.models, 'id'), base.pluck('id'));
+
+    t.ok(_.every(itemsAdded, function (item) {
+        return item.sweet !== true || item.awesomeness !== 6;
+    }), 'every item added back should either not be sweet or have awesomness of 6');
+
+    t.end();
+});
+
+test('clear filters', function (t) {
+    var base = getBaseCollection();
+    var sub = new SubCollection(base, {
+        where: {
+            sweet: true
+        },
+        comparator: 'id',
+        filter: function (model) {
+            return model.awesomeness === 6;
+        }
+    });
+
+    var itemsRemoved = [];
+    var itemsAdded = [];
+    var sortTriggered = 0;
+
+    t.equal(sub.length, 10, 'should be 10 that match initial filters');
+
+    sub.on('remove', function (model) {
+        itemsRemoved.push(model);
+    });
+    sub.on('add', function (model) {
+        itemsAdded.push(model);
+    });
+    sub.on('sort', function () {
+        sortTriggered++;
+    });
+
+    sub.clearFilters();
+
+    t.equal(sub.length, base.length, 'should be same as base length');
+    t.equal(itemsAdded.length, 90, '90 should have been added back');
+    t.equal(itemsRemoved.length, 0, '0 should have been removed');
+
+    t.deepEqual(sub._watched, [], 'should not be watching any properties');
+    t.equal(sub.comparator, 'id', 'should still have comparator');
+    t.equal(sortTriggered, 1, 'should trigger `sort` for renderers sake');
+
+    t.ok(_.every(itemsAdded, function (item) {
+        return item.sweet !== true || item.awesomeness !== 6;
+    }), 'every item added back should either not be sweet or have awesomness of 6');
+
     t.end();
 });
