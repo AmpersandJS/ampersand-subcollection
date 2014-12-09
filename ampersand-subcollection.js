@@ -10,9 +10,7 @@ function SubCollection(collection, spec) {
     this.reset();
     this.collection = collection;
     this._spec = (spec || (spec = this._spec));
-    if (spec.comparator) this.comparator = spec.comparator;
-    this._watch(spec.watched || []);
-    this._parseFilters(spec);
+    this._parseSpec(spec);
     this._runFilters();
     this.listenTo(this.collection, 'all', this._onCollectionEvent);
 }
@@ -76,9 +74,7 @@ _.extend(SubCollection.prototype, Events, underscoreMixins, {
     configure: function (opts, clear) {
         if (clear) this.reset();
         _.extend(this._spec, opts);
-        if (opts.comparator) this.comparator = opts.comparator;
-        if (opts.watched) this._watch(opts.watched);
-        this._parseFilters(opts);
+        this._parseSpec(opts);
         this._runFilters();
     },
 
@@ -133,7 +129,9 @@ _.extend(SubCollection.prototype, Events, underscoreMixins, {
         this._watched = _.difference(this._watched, _.isArray(item) ? item : [item]);
     },
 
-    _parseFilters: function (spec) {
+    _parseSpec: function (spec) {
+        if (spec.watched) this._watch(spec.watched);
+        if (spec.comparator) this.comparator = spec.comparator;
         if (spec.where) {
             _.each(spec.where, function (value, item) {
                 this._addFilter(function (model) {
