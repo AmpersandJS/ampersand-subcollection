@@ -389,6 +389,13 @@ test('reset works correctly/efficiently when passed to configure', function (t) 
         itemsAdded.push(model);
     });
 
+    var oldResetFilters = sub._resetFilters;
+    var resetCalls = [];
+    sub._resetFilters = function (resetComparator) {
+        resetCalls.push(_.toArray(arguments));
+        oldResetFilters.call(this, resetComparator);
+    };
+
     sub.configure({
         where: {
             sweet: true,
@@ -396,9 +403,13 @@ test('reset works correctly/efficiently when passed to configure', function (t) 
         }
     }, true);
 
+    t.same(resetCalls[0], [true], 'configure calls _resetFilters(true) when reset is true');
+    sub._resetFilters = oldResetFilters;
+
     t.equal(sub.length, 10, 'should be 10 that match second filter');
     t.equal(itemsRemoved.length, 40, '10 of the items should have been removed');
     t.equal(itemsAdded.length, 0, 'nothing should have been added');
+    t.equal(sub.comparator, sub.collection.comparator, 'comparator is reset');
 
     t.ok(_.every(itemsRemoved, function (item) {
         return item.sweet === true && item.awesomeness !== 6;
@@ -426,8 +437,8 @@ test('_watched contains members of spec.watched but is not spec.watched', functi
     t.end();
 });
 
-test('_watched is reset to spec.watched when _resetFilters is called', function (t) {
-    t.plan(2);
+test('_resetFilters', function (t) {
+    t.plan(7);
     var comparator = 'sweet';
     var where = {
         awesomeness: 5,
@@ -436,14 +447,24 @@ test('_watched is reset to spec.watched when _resetFilters is called', function 
     var base = getBaseCollection();
     var sub = new SubCollection(base, {
         comparator: comparator,
-        where: where
+        where: where,
+        watched: ['id']
     });
 
-    t.same(sub._watched, _.keys(where), '_watched should contain spec.watched members');
+    t.same(sub._watched.sort(), _.keys(where).concat('id').sort(), '_watched should contain spec.watched members');
 
     sub._resetFilters();
 
-    t.same(sub._watched, sub._spec.watched || [], '_resetFilters removes where keys from _watched');
+    t.same(sub._watched, [], '_resetFilters() empties _watched');
+    t.same(sub._filters, [], '_resetFilters() empties _filters');
+    t.same(sub._spec, {}, '_resetFilters() empties _spec');
+    t.same([sub.offset, sub.limit], [void 0, void 0], '_resetFilters() unsets offset and limit');
+    t.equal(sub.comparator, comparator, '_resetFilters() does NOT reset comparator');
+
+    sub._resetFilters(true);
+
+    t.equal(sub.comparator, sub.collection.comparator, '_resetFilters(true) resets comparator to collection.comparator');
+
     t.end();
 });
 

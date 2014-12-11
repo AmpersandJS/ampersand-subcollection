@@ -70,7 +70,7 @@ _.extend(SubCollection.prototype, Events, underscoreMixins, {
     //   limit: 20
     // }
     configure: function (opts, clear) {
-        if (clear) this._resetFilters();
+        if (clear) this._resetFilters(clear);
         _.extend(this._spec, opts);
         this._parseSpec(opts);
         this._runFilters();
@@ -97,17 +97,19 @@ _.extend(SubCollection.prototype, Events, underscoreMixins, {
 
     // clear all filters, reset everything
     reset: function () {
-        this.comparator = this.collection.comparator;
         this.configure({}, true);
     },
 
     // just reset filters, no model changes
-    _resetFilters: function () {
+    _resetFilters: function (resetComparator) {
         this._filters = [];
         this._watched = [];
         this._spec = {};
         this.limit = undefined;
         this.offset = undefined;
+        if (resetComparator) {
+            this.comparator = this.collection.comparator;
+        }
     },
 
     // internal method registering new filter function
