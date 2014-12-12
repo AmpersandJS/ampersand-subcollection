@@ -55,7 +55,7 @@ var favoriteWidgets = new SubCollection(widgets, {
     * `filter` {Function} [optional] If you need more control than what you get from `where` you can use a filter function to determine if the model should be included. It will get called with a model and you simply return `true` or `false`.
     * `filters` {Array} [optional] If you for some reason want to pass in multiple filter functions you can do so. This can be useful in cases where you keep a reference to one that you may remove later without wanting to remove all your filtering rules. But, most of the time you would just do use `filter` and do all your logic in that one function.
     * `watched` {Array} [optional] This is an array of property names to watch for changes to in the base collection. This happens automatically if you use `where`. If your comparator and filters are all functions, then you will need to manually specify the relevant properties to watch so that re-filtering and re-sorting will occur when needed.
-    * `comparator` {Function || String} [optional] If you want to determine sort order separate from the base collection provide this argument. If you pass a string it should be the name of the property that should be used to sort by, and it will be watched for changes automatically. If you pass a function, it will be passed the model and should return the value from the model that should be used to sort. If you pass a function that names two incoming arguments it will be used as a native Array.prototype.sort, where you get passed two models and return a 1, 0, -1 to specify how they compare.
+    * `comparator` {Function || String} [optional] If you want to determine sort order separate from the base collection provide this argument. If you pass a string it should be the name of the property that should be used to sort by, and it will be watched for changes automatically. If you pass a function, it will be passed the model and should return the value from the model that should be used to sort. If you pass a function that names two incoming arguments it will be used as a native `Array.prototype.sort`, where you get passed two models and return a `1`, `0`, `-1` to specify how they compare.
     * `limit` {Number} [optional] If specified will limit the number of matched models to this maximum number. This is useful for things like pagination.
     * `offset` {Number} [optional] Similar to `limit` setting an `offset` will specify what number to start at. So you can think of `limit` as number of results per page, and `offset` being the index of the start of the current page of results.
 
@@ -64,7 +64,7 @@ var favoriteWidgets = new SubCollection(widgets, {
 Config can get used to update subcollection config post-init.
 
 * `config` {Object} Same config object as what you pass to init.
-* `reset` {Boolean} Default: false. Whether or not to remove all previous filter config options. If you specify `{where: {read: true}}` in the init and then do `.configure({where: {from: 'steve'}})` without passing `true` the collection will contain only read items from steve. The filters are combined by default. When `reset` is true, the `comparator` is also reset.
+* `reset` {Boolean} Default: `false`. Whether or not to remove all previous filter config options. If you specify `{where: {read: true}}` in the init and then do `.configure({where: {from: 'steve'}})` without passing `true` the collection will contain only read items from steve. The filters are combined by default. When `reset` is `true`, the `comparator` is also reset.
 
 ### .reset()
 
