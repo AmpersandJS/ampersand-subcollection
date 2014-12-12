@@ -203,7 +203,7 @@ _.extend(SubCollection.prototype, Events, underscoreMixins, {
             this._runFilters();
         }
         // conditions under which we should proxy the events
-        if ((_.contains(['sync', 'invalid', 'destroy']) || eventName.indexOf('change') !== -1) && this.contains(model)) {
+        if ((_.contains(['sync', 'invalid', 'destroy'], eventName) || eventName.indexOf('change') !== -1) && this.contains(model)) {
             this.trigger.apply(this, arguments);
         }
     }
