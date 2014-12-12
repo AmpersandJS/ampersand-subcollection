@@ -71,7 +71,7 @@ _.extend(SubCollection.prototype, Events, underscoreMixins, {
     // }
     configure: function (opts, clear) {
         if (clear) this._resetFilters(clear);
-        _.extend(this._spec, opts);
+        //_.extend(this._spec, opts);
         this._parseSpec(opts);
         this._runFilters();
     },
@@ -104,7 +104,7 @@ _.extend(SubCollection.prototype, Events, underscoreMixins, {
     _resetFilters: function (resetComparator) {
         this._filters = [];
         this._watched = [];
-        this._spec = {};
+        //this._spec = {};
         this.limit = undefined;
         this.offset = undefined;
         if (resetComparator) {

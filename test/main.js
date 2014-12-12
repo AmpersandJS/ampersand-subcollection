@@ -438,7 +438,7 @@ test('_watched contains members of spec.watched but is not spec.watched', functi
 });
 
 test('_resetFilters', function (t) {
-    t.plan(7);
+    t.plan(6);
     var comparator = 'sweet';
     var where = {
         awesomeness: 5,
@@ -457,7 +457,6 @@ test('_resetFilters', function (t) {
 
     t.same(sub._watched, [], '_resetFilters() empties _watched');
     t.same(sub._filters, [], '_resetFilters() empties _filters');
-    t.same(sub._spec, {}, '_resetFilters() empties _spec');
     t.same([sub.offset, sub.limit], [void 0, void 0], '_resetFilters() unsets offset and limit');
     t.equal(sub.comparator, comparator, '_resetFilters() does NOT reset comparator');
 
