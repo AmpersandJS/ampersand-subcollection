@@ -409,7 +409,7 @@ test('reset works correctly/efficiently when passed to configure', function (t) 
     t.equal(sub.length, 10, 'should be 10 that match second filter');
     t.equal(itemsRemoved.length, 40, '10 of the items should have been removed');
     t.equal(itemsAdded.length, 0, 'nothing should have been added');
-    t.equal(sub.comparator, sub.collection.comparator, 'comparator is reset');
+    t.equal(sub.comparator, void 0, 'comparator is reset');
 
     t.ok(_.every(itemsRemoved, function (item) {
         return item.sweet === true && item.awesomeness !== 6;
@@ -462,7 +462,7 @@ test('_resetFilters', function (t) {
 
     sub._resetFilters(true);
 
-    t.equal(sub.comparator, sub.collection.comparator, '_resetFilters(true) resets comparator to collection.comparator');
+    t.equal(sub.comparator, void 0, '_resetFilters(true) resets comparator to undefined');
 
     t.end();
 });
@@ -521,7 +521,7 @@ test('reset', function (t) {
     t.equal(itemsRemoved.length, 0, '0 should have been removed');
 
     t.deepEqual(sub._watched, [], 'should not be watching any properties');
-    t.equal(sub.comparator, 'awesomeness', 'should have parent\'s comparator');
+    t.equal(sub.comparator, void 0, 'comparator should be undefined');
     t.equal(sortTriggered, 1, 'should have triggered a `sort`');
 
     t.deepEqual(_.pluck(sub.models, 'id'), base.pluck('id'));

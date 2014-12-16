@@ -104,12 +104,9 @@ _.extend(SubCollection.prototype, Events, underscoreMixins, {
     _resetFilters: function (resetComparator) {
         this._filters = [];
         this._watched = [];
-        //this._spec = {};
         this.limit = undefined;
         this.offset = undefined;
-        if (resetComparator) {
-            this.comparator = this.collection.comparator;
-        }
+        if (resetComparator) this.comparator = undefined;
     },
 
     // internal method registering new filter function
