@@ -2,7 +2,7 @@
 
 Filtered subset of a collection that emits events like a collection.
 
-Often for one part of an app you want a whole collection of models, but for another you want some sort of filterd subcollection. That's what this is for. It gives you a "pseudo collection" that behaves much like a full collections, but really is a subset.
+Often for one part of an app you want a whole collection of models, but for another you want some sort of filtered subcollection. That's what this is for. It gives you a "pseudo collection" that behaves much like a full collections, but really is a subset.
 
 <!-- starthide -->
 Part of the [Ampersand.js toolkit](http://ampersandjs.com) for building clientside applications.
