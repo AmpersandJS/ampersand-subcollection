@@ -144,6 +144,12 @@ This is done by using: [ampersand-class-extend](https://github.com/AmpersandJS/a
 ## changelog
 
 - 1.4.5 fixed bug where passing the `reset` option to `configure()` wasn't working.
+- 2.0.0
+  - fixed bug where `reset()` and `configure()` with `reset` option did not reset comparator
+  - auto-watch string comparator
+  - add better documentation about manual watches
+  - add `.filtered` property containing all filtered models _before_ applying `offset` and `limit`
+  - fixed bug where `destroy`, `invalid`, and `sync` events were not bubbling due to missing arg to `_.contains`
 
 ## credits
 
