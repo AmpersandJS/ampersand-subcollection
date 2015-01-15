@@ -610,3 +610,31 @@ test.only('_sort', function (t) {
     t.deepEqual(base.serialize().sort(nThenI), sub._sort().map(serializer), 'should sort correctly using two arg comparator');
     t.end();
 });
+
+test('custom event bubbling', function (t) {
+
+    var base = getBaseCollection();
+    var sub = new SubCollection(base, {
+        where: {
+            sweet: true,
+            awesomeness: 6
+        }
+    });
+
+    var customCountBase = 0;
+    base.on('custom', function () {
+        customCountBase++;
+    });
+
+    var customCountSub = 0;
+    sub.on('custom', function () {
+        customCountSub++;
+    });
+
+    var model = sub.at(0);
+    model.trigger('custom', model);
+
+    t.equal(customCountBase, customCountSub, 'sub bubbled custom event');
+
+    t.end();
+});
