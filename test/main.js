@@ -578,39 +578,6 @@ test('clear filters', function (t) {
     t.end();
 });
 
-test.only('_sort', function (t) {
-    var base = getBaseCollection();
-    var sub = new SubCollection(base, {
-        comparator: 'id'
-    });
-
-    function serializer(model) { return model.serialize(); }
-
-    t.deepEqual(_.sortBy(base.serialize(), 'id'), sub.map(serializer), 'should sort correctly using prop name');
-
-    function sThenA(model) {
-        var sortValue = (model.get('sweet') ? 20 : 0) + model.get('awesomeness') + '-' + model.get('name') + '-' + model.get('id');
-        return sortValue;
-    }
-    sub.comparator = sThenA;
-
-    t.deepEqual(
-        _.sortBy(base.models, sThenA).map(serializer),
-        sub._sort().map(serializer),
-        'should sort correctly using single arg comparator'
-    );
-
-    function nThenI(left, right) {
-        var lSort = left.name + '-' + left.id;
-        var rSort = right.name + '-' + right.id;
-        return lSort > rSort ? 1 : (lSort < rSort ? -1 : 0);
-    }
-    sub.comparator = nThenI;
-
-    t.deepEqual(base.serialize().sort(nThenI), sub._sort().map(serializer), 'should sort correctly using two arg comparator');
-    t.end();
-});
-
 test('custom event bubbling', function (t) {
 
     var base = getBaseCollection();
