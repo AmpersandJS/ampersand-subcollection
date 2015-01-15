@@ -188,7 +188,7 @@ _.extend(SubCollection.prototype, Events, underscoreMixins, {
         }, this);
 
         // unless we have the same models in same order trigger `sort`
-        if (!_.isEqual(existingModels, newModels)) {
+        if (!_.isEqual(existingModels, newModels) && this.comparator) {
             this.trigger('sort', this);
         }
     },
