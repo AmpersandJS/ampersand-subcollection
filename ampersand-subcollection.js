@@ -100,6 +100,37 @@ _.extend(SubCollection.prototype, Events, underscoreMixins, {
         this.configure({}, true);
     },
 
+    // collection compatible sorting
+    _sort: function (models) {
+        var self = this;
+        models = models || this.models;
+        if (typeof this.comparator === 'string') {
+            models.sort(function (left, right) {
+                if (left.get) {
+                    left = left.get(self.comparator);
+                    right = right.get(self.comparator);
+                } else {
+                    left = left[self.comparator];
+                    right = right[self.comparator];
+                }
+                if (left > right || left === void 0) return 1;
+                if (left < right || right === void 0) return -1;
+                return 0;
+            });
+        } else if (this.comparator.length === 1) {
+            models.sort(function (left, right) {
+                left = self.comparator(left);
+                right = self.comparator(right);
+                if (left > right || left === void 0) return 1;
+                if (left < right || right === void 0) return -1;
+                return 0;
+            });
+        } else {
+            models.sort(this.comparator.bind(this));
+        }
+        return models;
+    },
+
     // just reset filters, no model changes
     _resetFilters: function (resetComparator) {
         this._filters = [];
@@ -163,7 +194,7 @@ _.extend(SubCollection.prototype, Events, underscoreMixins, {
         }
 
         // sort it
-        if (this.comparator) newModels = _.sortBy(newModels, this.comparator);
+        if (this.comparator) newModels = this._sort(newModels, this.comparator);
 
         // trim it to length
         if (this.limit || this.offset) {
