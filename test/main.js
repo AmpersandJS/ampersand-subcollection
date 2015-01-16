@@ -601,6 +601,8 @@ test('custom event bubbling', function (t) {
     var model = sub.at(0);
     model.trigger('custom', model);
 
+    t.equal(customCountBase, 1, 'base event triggered');
+    t.equal(customCountSub, 1, 'sub event triggered');
     t.equal(customCountBase, customCountSub, 'sub bubbled custom event');
 
     t.end();
