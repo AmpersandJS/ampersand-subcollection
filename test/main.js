@@ -578,35 +578,32 @@ test('clear filters', function (t) {
     t.end();
 });
 
-test.only('_sort', function (t) {
+test('custom event bubbling', function (t) {
+
     var base = getBaseCollection();
     var sub = new SubCollection(base, {
-        comparator: 'id'
+        where: {
+            sweet: true,
+            awesomeness: 6
+        }
     });
 
-    function serializer(model) { return model.serialize(); }
+    var customCountBase = 0;
+    base.on('custom', function () {
+        customCountBase++;
+    });
 
-    t.deepEqual(_.sortBy(base.serialize(), 'id'), sub.map(serializer), 'should sort correctly using prop name');
+    var customCountSub = 0;
+    sub.on('custom', function () {
+        customCountSub++;
+    });
 
-    function sThenA(model) {
-        var sortValue = (model.get('sweet') ? 20 : 0) + model.get('awesomeness') + '-' + model.get('name') + '-' + model.get('id');
-        return sortValue;
-    }
-    sub.comparator = sThenA;
+    var model = sub.at(0);
+    model.trigger('custom', model);
 
-    t.deepEqual(
-        _.sortBy(base.models, sThenA).map(serializer),
-        sub._sort().map(serializer),
-        'should sort correctly using single arg comparator'
-    );
+    t.equal(customCountBase, 1, 'base event triggered');
+    t.equal(customCountSub, 1, 'sub event triggered');
+    t.equal(customCountBase, customCountSub, 'sub bubbled custom event');
 
-    function nThenI(left, right) {
-        var lSort = left.name + '-' + left.id;
-        var rSort = right.name + '-' + right.id;
-        return lSort > rSort ? 1 : (lSort < rSort ? -1 : 0);
-    }
-    sub.comparator = nThenI;
-
-    t.deepEqual(base.serialize().sort(nThenI), sub._sort().map(serializer), 'should sort correctly using two arg comparator');
     t.end();
 });
