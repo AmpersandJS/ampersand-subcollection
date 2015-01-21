@@ -522,9 +522,9 @@ test('reset', function (t) {
 
     t.deepEqual(sub._watched, [], 'should not be watching any properties');
     t.equal(sub.comparator, void 0, 'comparator should be undefined');
-    t.equal(sortTriggered, 1, 'should have triggered a `sort`');
+    t.equal(sortTriggered, 0, 'should not have triggered a `sort`');
 
-    t.deepEqual(_.pluck(sub.models, 'id'), base.pluck('id'));
+    t.deepEqual(_.pluck(sub.models, 'id'), base.pluck('id'), 'base and sub should have same models');
 
     t.ok(_.every(itemsAdded, function (item) {
         return item.sweet !== true || item.awesomeness !== 6;
