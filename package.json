@@ -7,6 +7,16 @@
     "url": "https://github.com/ampersandjs/ampersand-subcollection/issues"
   },
   "dependencies": {
+    "amp-contains": "^1.0.1",
+    "amp-difference": "^1.0.1",
+    "amp-each": "^1.0.1",
+    "amp-extend": "^1.0.1",
+    "amp-flatten": "^1.0.1",
+    "amp-is-array": "^1.0.1",
+    "amp-is-object-equal": "^1.0.2",
+    "amp-keys": "^1.0.1",
+    "amp-reduce": "^1.0.0",
+    "amp-to-array": "^1.0.1",
     "ampersand-class-extend": "^1.0.0",
     "ampersand-collection-underscore-mixin": "^1.0.0",
     "ampersand-version": "^1.0.0",
@@ -14,6 +24,9 @@
     "underscore": "^1.6.0"
   },
   "devDependencies": {
+    "amp-every": "^1.0.1",
+    "amp-pluck": "^1.0.0",
+    "amp-to-array": "^1.0.0",
     "ampersand-collection": "~0.2.3",
     "ampersand-state": "~0.3.1",
     "jshint": "^2.5.5",
