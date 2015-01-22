@@ -19,8 +19,8 @@
     "amp-to-array": "^1.0.1",
     "ampersand-class-extend": "^1.0.0",
     "ampersand-collection-underscore-mixin": "^1.0.0",
+    "ampersand-events": "^1.0.0",
     "ampersand-version": "^1.0.0",
-    "backbone-events-standalone": "0.2.2",
     "underscore": "^1.6.0"
   },
   "devDependencies": {
