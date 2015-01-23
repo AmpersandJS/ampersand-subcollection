@@ -4,8 +4,8 @@ var SubCollection = require('./ampersand-subcollection');
 var State = require('ampersand-state');
 var sample = require('amp-sample');
 
-//var collectionSize = 2000;
-var collectionSize = 3;
+var collectionSize = 2000;
+//var collectionSize = 3;
 var i = 0;
 var names = ['Cat', 'Dog', 'Turtle', 'Dinosaur', 'Fish', 'Pony', 'Axolotl'];
 var itemData = [];
@@ -32,20 +32,25 @@ var activeItems = new SubCollection(items, {
   }
 });
 
+/*
 var coolItems = new SubCollection(activeItems, {
   filter: function (item) {
     coolCounter++;
   	return item.cool;
   }
 });
+*/
 
 for (i = 0;i < collectionSize; i++) {
     itemData.push({
+        id: i,
         name: sample(names, 1)[0],
-        active: Boolean(i % 2), //Half active
+        //active: Boolean(i % 2), //Half active
+        active: true,
         cool: Boolean(i % 5) //One quarter cool
     });
 }
+//console.log('data', itemData);
 console.time('using set all at once');
 items.set(itemData);
 console.timeEnd('using set all at once');
@@ -53,7 +58,7 @@ console.log('active ran', activeCounter, 'times');
 console.log('cool ran', coolCounter, 'times');
 console.log('items:', collectionSize);
 console.log('active:', activeItems.length);
-console.log('cool:', coolItems.length);
+//console.log('cool:', coolItems.length);
 console.log('----------');
 
 /*
