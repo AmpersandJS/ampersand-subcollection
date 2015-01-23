@@ -10,6 +10,7 @@
     "amp-contains": "^1.0.1",
     "amp-difference": "^1.0.1",
     "amp-each": "^1.0.1",
+    "amp-every": "^1.0.1",
     "amp-extend": "^1.0.1",
     "amp-flatten": "^1.0.1",
     "amp-is-array": "^1.0.1",

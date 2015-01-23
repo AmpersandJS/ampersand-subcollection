@@ -5,6 +5,7 @@ var classExtend = require('ampersand-class-extend');
 var contains = require('amp-contains');
 var difference = require('amp-difference');
 var each = require('amp-each');
+var every = require('amp-every');
 var extend = require('amp-extend');
 var flatten = require('amp-flatten');
 var isArray = require('amp-is-array');
@@ -16,12 +17,26 @@ var slice = Array.prototype.slice;
 
 
 function SubCollection(collection, spec) {
+    var l = 0;
+    var list;
+    var i = 0;
     this.collection = collection;
-    this.filtered = []; //Just the filtered models
+    this.indexes = collection.indexes;
+    this._indexes = {};
+    this.mainIndex = collection.mainIndex;
     this.models = []; //Our filtered, offset/limited models
     this.rootModels = []; //Cached copy of our parent's models, refreshed during filters
     this.configure(spec || {}, true);
     this.listenTo(this.collection, 'all', this._onCollectionEvent);
+    list = this.indexes || [];
+    list.push(this.mainIndex);
+    list.push('cid');
+    l = list.length;
+    this.models = [];
+    this._indexes = {};
+    for (; i < l; i++) {
+        this._indexes[list[i]] = {};
+    }
 }
 
 extend(SubCollection.prototype, Events, underscoreMixins, {
@@ -97,6 +112,15 @@ extend(SubCollection.prototype, Events, underscoreMixins, {
         if (model && this.contains(model)) return model;
     },
 
+    _filteredGet: function (query, indexName) {
+        if (!query) return;
+        var index = this._indexes[indexName || this.mainIndex];
+        return index[query] ||
+            index[query[this.mainIndex]] ||
+            this._indexes.cid[query] ||
+            this._indexes.cid[query.cid];
+    },
+
     // remove filter if found
     _removeFilter: function (filter) {
         var index = this._filters.indexOf(filter);
@@ -112,6 +136,7 @@ extend(SubCollection.prototype, Events, underscoreMixins, {
 
     // just reset filters, no model changes
     _resetFilters: function (resetComparator) {
+        this.filtered = undefined;
         this._filters = [];
         this._watched = [];
         this.limit = undefined;
@@ -156,18 +181,45 @@ extend(SubCollection.prototype, Events, underscoreMixins, {
         }
     },
 
-    _runFilters: function () {
+    _runFilters: function (model) {
         // make a copy of the array for comparisons
         var existingModels = slice.call(this.models);
         this.rootModels = slice.call(this.collection.models);
         var offset = (this.offset || 0);
-        var newModels, toAdd, toRemove;
+        var newModels = [];
+        var newIndexes = {};
+        var toAdd, toRemove, indexVal, name;
+        for (name in this._indexes) {
+            newIndexes[name] = {};
+        }
 
         // reduce base model set by applying filters
         if (this._filters.length) {
+            each(this.rootModels, function (parentModel) {
+                if (parentModel === model || !this.filtered) {
+                    if (every(this._filters, function (filter) { return filter(parentModel); })) {
+                        newModels.push(parentModel);
+                        for (name in this._indexes) {
+                            indexVal = parentModel[name] || (parentModel.get && parentModel.get(name));
+                            if (indexVal) newIndexes[name][indexVal] = parentModel;
+                        }
+                    }
+                } else if (this._filteredGet(parentModel)) {
+                    newModels.push(parentModel);
+                    for (name in this._indexes) {
+                        indexVal = parentModel[name] || (parentModel.get && parentModel.get(name));
+                        if (indexVal) newIndexes[name][indexVal] = parentModel;
+                    }
+                }
+            }, this);
+
+            this._indexes = newIndexes;
+
+            /*
             newModels = reduce(this._filters, function (startingArray, filterFunc) {
                 return startingArray.filter(filterFunc);
             }, this.rootModels);
+           */
         } else {
             newModels = slice.call(this.rootModels);
         }
@@ -175,10 +227,12 @@ extend(SubCollection.prototype, Events, underscoreMixins, {
         // sort it
         if (this.comparator) newModels = _.sortBy(newModels, this.comparator);
 
+        // Cache a reference to the full filtered set to allow this.filtered.length. Ref: #6
+        this.filtered = newModels;
+        //set this._index
+
         // trim it to length
         if (this.limit || this.offset) {
-            // Cache a reference to the full filtered set to allow this.filtered.length. Ref: #6
-            this.filtered = newModels;
             newModels = newModels.slice(offset, this.limit + offset);
         }
 
@@ -205,16 +259,19 @@ extend(SubCollection.prototype, Events, underscoreMixins, {
 
     _onCollectionEvent: function (eventName, model) {
         var propName = eventName.split(':')[1];
+        var containsModel, shouldContainModel;
 
         // conditions under which we should re-run filters
+
         if (
             (propName !== undefined && propName === this.comparator) ||
             contains(this._watched, propName) ||
-            contains(['remove', 'reset', 'sync'], eventName) ||
+            contains(['remove', 'reset'], eventName) ||
             (eventName === 'add' && !contains(this.rootModels, model))
         ) {
-            this._runFilters();
+            this._runFilters(model);
         }
+        //reset is a problem
         // conditions under which we should proxy the events
         if (
             (!contains(['add', 'remove'], eventName) && this.contains(model)) ||
