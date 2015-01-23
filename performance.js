@@ -45,8 +45,7 @@ for (i = 0;i < collectionSize; i++) {
     itemData.push({
         id: i,
         name: sample(names, 1)[0],
-        //active: Boolean(i % 2), //Half active
-        active: true,
+        active: Boolean(i % 2), //Half active
         cool: Boolean(i % 5) //One quarter cool
     });
 }
