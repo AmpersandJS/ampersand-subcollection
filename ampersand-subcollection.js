@@ -17,11 +17,11 @@ var slice = Array.prototype.slice;
 
 function SubCollection(collection, spec) {
     this.collection = collection;
-    this.models = [];
+    this.filtered = []; //Just the filtered models
+    this.models = []; //Our filtered, offset/limited models
     this.configure(spec || {}, true);
     this.listenTo(this.collection, 'all', this._onCollectionEvent);
 }
-
 
 extend(SubCollection.prototype, Events, underscoreMixins, {
     // add a filter function directly
@@ -204,8 +204,13 @@ extend(SubCollection.prototype, Events, underscoreMixins, {
 
     _onCollectionEvent: function (eventName, model) {
         var propName = eventName.split(':')[1];
+
         // conditions under which we should re-run filters
-        if (propName === this.comparator || contains(this._watched, propName) || contains(['add', 'remove', 'reset', 'sync'], eventName)) {
+        if (
+            (propName !== undefined && (propName === this.comparator || contains(this._watched, propName))) ||
+            contains(['remove', 'reset', 'sync'], eventName) ||
+            (eventName === 'add' && !this.contains(model))
+        ) {
             this._runFilters();
         }
         // conditions under which we should proxy the events
