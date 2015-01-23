@@ -19,6 +19,7 @@ function SubCollection(collection, spec) {
     this.collection = collection;
     this.filtered = []; //Just the filtered models
     this.models = []; //Our filtered, offset/limited models
+    this.rootModels = []; //Cached copy of our parent's models, refreshed during filters
     this.configure(spec || {}, true);
     this.listenTo(this.collection, 'all', this._onCollectionEvent);
 }
@@ -158,7 +159,7 @@ extend(SubCollection.prototype, Events, underscoreMixins, {
     _runFilters: function () {
         // make a copy of the array for comparisons
         var existingModels = slice.call(this.models);
-        var rootModels = slice.call(this.collection.models);
+        this.rootModels = slice.call(this.collection.models);
         var offset = (this.offset || 0);
         var newModels, toAdd, toRemove;
 
@@ -166,9 +167,9 @@ extend(SubCollection.prototype, Events, underscoreMixins, {
         if (this._filters.length) {
             newModels = reduce(this._filters, function (startingArray, filterFunc) {
                 return startingArray.filter(filterFunc);
-            }, rootModels);
+            }, this.rootModels);
         } else {
-            newModels = slice.call(rootModels);
+            newModels = slice.call(this.rootModels);
         }
 
         // sort it
@@ -207,14 +208,18 @@ extend(SubCollection.prototype, Events, underscoreMixins, {
 
         // conditions under which we should re-run filters
         if (
-            (propName !== undefined && (propName === this.comparator || contains(this._watched, propName))) ||
+            (propName !== undefined && propName === this.comparator) ||
+            contains(this._watched, propName) ||
             contains(['remove', 'reset', 'sync'], eventName) ||
-            (eventName === 'add' && !this.contains(model))
+            (eventName === 'add' && !contains(this.rootModels, model))
         ) {
             this._runFilters();
         }
         // conditions under which we should proxy the events
-        if (!contains(['add', 'remove'], eventName) && this.contains(model)) {
+        if (
+            (!contains(['add', 'remove'], eventName) && this.contains(model)) ||
+            eventName === 'reset'
+        ) {
             this.trigger.apply(this, arguments);
         }
     }
