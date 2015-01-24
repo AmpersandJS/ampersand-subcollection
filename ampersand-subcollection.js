@@ -23,11 +23,9 @@ function SubCollection(collection, spec) {
     this.mainIndex = collection.mainIndex;
     this.models = []; //Our filtered, offset/limited models
     this.rootModels = []; //Cached copy of our parent's models, refreshed during filters
+    this._resetIndexes();
     this.configure(spec || {}, true);
     this.listenTo(this.collection, 'all', this._onCollectionEvent);
-    this.models = [];
-    this._resetIndexes();
-    this.filterRun = 0;
 }
 
 extend(SubCollection.prototype, Events, underscoreMixins, {
@@ -106,10 +104,7 @@ extend(SubCollection.prototype, Events, underscoreMixins, {
     _filteredGet: function (query, indexName) {
         if (!query) return;
         var index = this._indexes[indexName || this.mainIndex];
-        return index[query] ||
-            index[query[this.mainIndex]] ||
-            this._indexes.cid[query] ||
-            this._indexes.cid[query.cid];
+        return index[query] || index[query[this.mainIndex]] || this._indexes.cid[query] || this._indexes.cid[query.cid];
     },
 
     // remove filter if found
@@ -193,43 +188,6 @@ extend(SubCollection.prototype, Events, underscoreMixins, {
             newModels = slice.call(this.rootModels);
         }
 
-/*
-        // reduce base model set by applying filters
-        if (this._filters.length) {
-            ////console.log('filtering');
-            each(this.rootModels, function (parentModel, idx) {
-                this.filterRun++;
-                //console.log('filtering model', parentModel.id, !!this.filtered, this.filtered);
-                if (parentModel === model || !this.filtered) {
-                    //console.log('new model, running filters', parentModel.id);
-                    var accepted = every(this._filters, function (filter) {
-                        return filter(parentModel);
-                    });
-
-                    //console.log('model was accepted?', accepted);
-
-                    if (accepted) {
-                        newModels.push(parentModel);
-                        //console.log('model matches filters');
-                        this._addIndex(newIndexes, parentModel);
-                    }
-                } else if (this._filteredGet(parentModel)) {
-                    newModels.push(parentModel);
-                    //console.log('model already filtered');
-                    this._addIndex(newIndexes, parentModel);
-                } else {
-                    //console.log('model rejected');
-                }
-            }, this);
-        } else {
-            //console.log('no filters to apply');
-            newModels = slice.call(this.rootModels);
-            newModels.forEach(function (model) {
-                this._addIndex(newIndexes, model);
-            }.bind(this));
-        }
-*/
-
         // sort it
         if (this.comparator) newModels = _.sortBy(newModels, this.comparator);
 
@@ -280,7 +238,7 @@ extend(SubCollection.prototype, Events, underscoreMixins, {
             (propName !== undefined && propName === this.comparator) ||
             contains(this._watched, propName)
         ) {
-            var alreadyHave = contains(this.filtered, model);
+            var alreadyHave = this._filteredGet(model);
             var accepted = every(this._filters, function (filter) {
                 return filter(model);
             });
@@ -289,6 +247,8 @@ extend(SubCollection.prototype, Events, underscoreMixins, {
                 action = 'add';
             } else if (alreadyHave && !accepted) {
                 action = 'remove';
+            } else {
+                action = 'ignore';
             }
         }
 
