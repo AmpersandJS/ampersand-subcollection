@@ -17,9 +17,6 @@ var slice = Array.prototype.slice;
 
 
 function SubCollection(collection, spec) {
-    var l = 0;
-    var list;
-    var i = 0;
     this.collection = collection;
     this.indexes = collection.indexes;
     this._indexes = {};
@@ -28,15 +25,9 @@ function SubCollection(collection, spec) {
     this.rootModels = []; //Cached copy of our parent's models, refreshed during filters
     this.configure(spec || {}, true);
     this.listenTo(this.collection, 'all', this._onCollectionEvent);
-    list = this.indexes || [];
-    list.push(this.mainIndex);
-    list.push('cid');
-    l = list.length;
     this.models = [];
-    this._indexes = {};
-    for (; i < l; i++) {
-        this._indexes[list[i]] = {};
-    }
+    this._resetIndexes();
+    this.filterRun = 0;
 }
 
 extend(SubCollection.prototype, Events, underscoreMixins, {
@@ -195,41 +186,61 @@ extend(SubCollection.prototype, Events, underscoreMixins, {
 
         // reduce base model set by applying filters
         if (this._filters.length) {
-            each(this.rootModels, function (parentModel) {
-                if (parentModel === model || !this.filtered) {
-                    if (every(this._filters, function (filter) { return filter(parentModel); })) {
-                        newModels.push(parentModel);
-                        for (name in this._indexes) {
-                            indexVal = parentModel[name] || (parentModel.get && parentModel.get(name));
-                            if (indexVal) newIndexes[name][indexVal] = parentModel;
-                        }
-                    }
-                } else if (this._filteredGet(parentModel)) {
-                    newModels.push(parentModel);
-                    for (name in this._indexes) {
-                        indexVal = parentModel[name] || (parentModel.get && parentModel.get(name));
-                        if (indexVal) newIndexes[name][indexVal] = parentModel;
-                    }
-                }
-            }, this);
-
-            this._indexes = newIndexes;
-
-            /*
-            newModels = reduce(this._filters, function (startingArray, filterFunc) {
+            newModels = _.reduce(this._filters, function (startingArray, filterFunc) {
                 return startingArray.filter(filterFunc);
             }, this.rootModels);
-           */
         } else {
             newModels = slice.call(this.rootModels);
         }
+
+/*
+        // reduce base model set by applying filters
+        if (this._filters.length) {
+            ////console.log('filtering');
+            each(this.rootModels, function (parentModel, idx) {
+                this.filterRun++;
+                //console.log('filtering model', parentModel.id, !!this.filtered, this.filtered);
+                if (parentModel === model || !this.filtered) {
+                    //console.log('new model, running filters', parentModel.id);
+                    var accepted = every(this._filters, function (filter) {
+                        return filter(parentModel);
+                    });
+
+                    //console.log('model was accepted?', accepted);
+
+                    if (accepted) {
+                        newModels.push(parentModel);
+                        //console.log('model matches filters');
+                        this._addIndex(newIndexes, parentModel);
+                    }
+                } else if (this._filteredGet(parentModel)) {
+                    newModels.push(parentModel);
+                    //console.log('model already filtered');
+                    this._addIndex(newIndexes, parentModel);
+                } else {
+                    //console.log('model rejected');
+                }
+            }, this);
+        } else {
+            //console.log('no filters to apply');
+            newModels = slice.call(this.rootModels);
+            newModels.forEach(function (model) {
+                this._addIndex(newIndexes, model);
+            }.bind(this));
+        }
+*/
 
         // sort it
         if (this.comparator) newModels = _.sortBy(newModels, this.comparator);
 
         // Cache a reference to the full filtered set to allow this.filtered.length. Ref: #6
-        this.filtered = newModels;
-        //set this._index
+        if (this.rootModels.length) {
+            this.filtered = newModels;
+            this._indexes = newIndexes;
+        } else {
+            this.filtered = undefined;
+            this._resetIndexes();
+        }
 
         // trim it to length
         if (this.limit || this.offset) {
@@ -261,13 +272,30 @@ extend(SubCollection.prototype, Events, underscoreMixins, {
         var propName = eventName.split(':')[1];
         var containsModel, shouldContainModel;
 
+        var action = eventName;
+
         // conditions under which we should re-run filters
 
         if (
             (propName !== undefined && propName === this.comparator) ||
-            contains(this._watched, propName) ||
-            contains(['remove', 'reset'], eventName) ||
-            (eventName === 'add' && !contains(this.rootModels, model))
+            contains(this._watched, propName)
+        ) {
+            var alreadyHave = contains(this.filtered, model);
+            var accepted = every(this._filters, function (filter) {
+                return filter(model);
+            });
+
+            if (!alreadyHave && accepted) {
+                action = 'add';
+            } else if (alreadyHave && !accepted) {
+                action = 'remove';
+            }
+        }
+
+        if (
+            action === 'remove' ||
+            action === 'reset' ||
+            (action === 'add' && !contains(this.rootModels, model))
         ) {
             this._runFilters(model);
         }
@@ -278,6 +306,20 @@ extend(SubCollection.prototype, Events, underscoreMixins, {
             eventName === 'reset'
         ) {
             this.trigger.apply(this, arguments);
+        }
+    },
+
+    _addIndex: function (newIndexes, model) {
+        for (var name in this._indexes) {
+            var indexVal = model[name] || (model.get && model.get(name));
+            if (indexVal) newIndexes[name][indexVal] = model;
+        }
+    },
+
+    _resetIndexes: function () {
+        this._indexes = {};
+        for (var i = 0; i < this.indexes.length; i++) {
+            this._indexes[this.indexes[i]] = {};
         }
     }
 });
