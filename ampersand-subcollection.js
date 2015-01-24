@@ -43,6 +43,7 @@ extend(SubCollection.prototype, Events, underscoreMixins, {
     clearFilters: function () {
         this._resetFilters();
         this._runFilters();
+        this._sliceModels();
     },
 
     // Swap out a set of old filters with a set of
@@ -71,6 +72,7 @@ extend(SubCollection.prototype, Events, underscoreMixins, {
         });
 
         this._runFilters();
+        this._sliceModels();
     },
 
     // Update sub collection config, if `clear`
@@ -85,9 +87,9 @@ extend(SubCollection.prototype, Events, underscoreMixins, {
     // }
     configure: function (opts, clear) {
         if (clear) this._resetFilters(clear);
-        //extend(this._spec, opts);
         this._parseSpec(opts);
-        this._runFilters();
+        if (clear) this._runFilters();
+        this._sliceModels();
     },
 
     // gets a model at a given index
@@ -192,7 +194,6 @@ extend(SubCollection.prototype, Events, underscoreMixins, {
         }
         this._filtered = newModels;
         this._addIndex(this._indexes, model);
-        this.trigger('add', model, this);
     },
 
     //Test if a model passes our filters
@@ -212,8 +213,9 @@ extend(SubCollection.prototype, Events, underscoreMixins, {
             newModels.splice(modelIndex, 1);
             this._filtered = newModels;
             this._removeIndex(this._indexes, model);
-            this.trigger('remove', model, this);
+            return true;
         }
+        return false;
     },
 
     _sliceModels: function () {
@@ -312,13 +314,15 @@ extend(SubCollection.prototype, Events, underscoreMixins, {
         if (action === 'add') {
             if (this._filtered.length === 0) {
                 this._runFilters();
+                this.action = 'ignore'; //Don't emit
             } else {
                 this._addModel(model, options);
             }
         } else if (action === 'remove') {
-            this._removeModel(model);
+            if (!this._removeModel(model)) {
+                action === 'ignore'; //Don't emit
+            }
         } else if (action === 'reset') {
-            //TODO make init share this functionality
             this._runFilters();
         } else if (action === 'sort') {
             this._filtered = this._sortModels(this._filtered);
@@ -326,8 +330,16 @@ extend(SubCollection.prototype, Events, underscoreMixins, {
         this._sliceModels();
 
         if (action === 'reset') {
-            //After slicing
             this.trigger.apply(this, arguments);
+        } else if (action === 'add') {
+            //Only if we're in the sliced models
+            this.trigger('add', model, this);
+        } else if (action === 'remove') {
+            //Only if we were in the sliced models
+            this.trigger('remove', model, this);
+        } else if (action === 'ignore') {
+            //Only if we are in the sliced models
+            this.trigger.apply(arguments);
         }
     },
 
