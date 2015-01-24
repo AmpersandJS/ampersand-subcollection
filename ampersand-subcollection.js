@@ -167,10 +167,7 @@ extend(SubCollection.prototype, Events, underscoreMixins, {
         }
     },
 
-    //Add a model to this subcollection that has already passed the filters
-    _addModel: function (model) {
-        var newModels = slice.call(this._filtered);
-        newModels.push(model);
+    _sortModels: function (newModels) {
         if (this.comparator) {
             newModels = _.sortBy(newModels, this.comparator);
         } else {
@@ -179,6 +176,19 @@ extend(SubCollection.prototype, Events, underscoreMixins, {
                 return 0;
                 //Somehow return the index of this model in parent
             });
+        }
+        return newModels;
+    },
+
+    //Add a model to this subcollection that has already passed the filters
+    _addModel: function (model, options) {
+        var newModels = slice.call(this._filtered);
+        newModels.push(model);
+        //If our parent has a comparator and we didn't get an at we'll get a sort later
+        //If the parent used an at we will never get sort
+        //If sort is true we have to sort
+        if (options.sort || options.at || (!this.collection.comparator && this.comparator)) {
+            newModels = this._sortModels(newModels);
         }
         this._filtered = newModels;
         this._addIndex(this._indexes, model);
@@ -271,7 +281,7 @@ extend(SubCollection.prototype, Events, underscoreMixins, {
         }
     },
 
-    _onCollectionEvent: function (eventName, model) {
+    _onCollectionEvent: function (eventName, model, that, options) {
         var propName = eventName.split(':')[1];
         var containsModel, shouldContainModel;
         var accepted, alreadyHave;
@@ -303,13 +313,15 @@ extend(SubCollection.prototype, Events, underscoreMixins, {
             if (this._filtered.length === 0) {
                 this._runFilters();
             } else {
-                this._addModel(model);
+                this._addModel(model, options);
             }
         } else if (action === 'remove') {
             this._removeModel(model);
         } else if (action === 'reset') {
             //TODO make init share this functionality
             this._runFilters();
+        } else if (action === 'sort') {
+            this._filtered = this._sortModels(this._filtered);
         }
         this._sliceModels();
 
