@@ -20,10 +20,10 @@ function SubCollection(collection, spec) {
     this.collection = collection;
     this.indexes = collection.indexes;
     this._indexes = {};
+    this._resetIndexes(this._indexes);
+    this._filtered = [];
     this.mainIndex = collection.mainIndex;
     this.models = []; //Our filtered, offset/limited models
-    this.rootModels = []; //Cached copy of our parent's models, refreshed during filters
-    this._resetIndexes();
     this.configure(spec || {}, true);
     this.listenTo(this.collection, 'all', this._onCollectionEvent);
 }
@@ -122,7 +122,7 @@ extend(SubCollection.prototype, Events, underscoreMixins, {
 
     // just reset filters, no model changes
     _resetFilters: function (resetComparator) {
-        this.filtered = undefined;
+        this._filtered = [];
         this._filters = [];
         this._watched = [];
         this.limit = undefined;
@@ -167,42 +167,87 @@ extend(SubCollection.prototype, Events, underscoreMixins, {
         }
     },
 
-    _runFilters: function (model) {
+    //Add a model to this subcollection that has already passed the filters
+    _addModel: function (model) {
+        var newModels = slice.call(this._filtered);
+        newModels.push(model);
+        if (this.comparator) {
+            newModels = _.sortBy(newModels, this.comparator);
+        } else {
+            newModels = _.sortBy(newModels, function (model) {
+                //TODO
+                return 0;
+                //Somehow return the index of this model in parent
+            });
+        }
+        this._filtered = newModels;
+        this._addIndex(this._indexes, model);
+        this.trigger('add', model, this);
+    },
+
+    //Test if a model passes our filters
+    _testModel: function (model) {
+        if (this._filters.length === 0) {
+            return true;
+        }
+        return every(this._filters, function (filter) {
+            return filter(model);
+        });
+    },
+    //Remove a model if it's in this subcollection
+    _removeModel: function (model) {
+        var newModels = slice.call(this._filtered);
+        var modelIndex = newModels.indexOf(model);
+        if (modelIndex > -1) {
+            newModels.splice(modelIndex, 1);
+            this._filtered = newModels;
+            this._removeIndex(this._indexes, model);
+            this.trigger('remove', model, this);
+        }
+    },
+
+    _sliceModels: function () {
+        var newModels = slice.call(this._filtered);
+        var offset = (this.offset || 0);
+        if (this.limit || this.offset) {
+            newModels = newModels.slice(offset, this.limit + offset);
+        }
+        this.models = newModels;
+    },
+
+    _runFilters: function () {
         // make a copy of the array for comparisons
         var existingModels = slice.call(this.models);
-        this.rootModels = slice.call(this.collection.models);
+        var rootModels = slice.call(this.collection.models);
         var offset = (this.offset || 0);
-        var newModels = [];
         var newIndexes = {};
-        var toAdd, toRemove, indexVal, name;
-        for (name in this._indexes) {
-            newIndexes[name] = {};
-        }
+        var newModels, toAdd, toRemove, indexVal, name;
+
+        this._resetIndexes(newIndexes);
 
         // reduce base model set by applying filters
         if (this._filters.length) {
             newModels = _.reduce(this._filters, function (startingArray, filterFunc) {
                 return startingArray.filter(filterFunc);
-            }, this.rootModels);
+            }, rootModels);
         } else {
-            newModels = slice.call(this.rootModels);
+            newModels = slice.call(rootModels);
         }
 
         // sort it
         if (this.comparator) newModels = _.sortBy(newModels, this.comparator);
 
-        // Cache a reference to the full filtered set to allow this.filtered.length. Ref: #6
-        if (this.rootModels.length) {
-            this.filtered = newModels;
+        newModels.forEach(function (model) {
+            this._addIndex(newIndexes, model);
+        }, this);
+
+        // Cache a reference to the full filtered set to allow this._filtered.length. Ref: #6
+        if (rootModels.length) {
+            this._filtered = newModels;
             this._indexes = newIndexes;
         } else {
-            this.filtered = undefined;
-            this._resetIndexes();
-        }
-
-        // trim it to length
-        if (this.limit || this.offset) {
-            newModels = newModels.slice(offset, this.limit + offset);
+            this._filtered = [];
+            this._resetIndexes(this._indexes);
         }
 
         // now we've got our new models time to compare
@@ -229,19 +274,16 @@ extend(SubCollection.prototype, Events, underscoreMixins, {
     _onCollectionEvent: function (eventName, model) {
         var propName = eventName.split(':')[1];
         var containsModel, shouldContainModel;
+        var accepted, alreadyHave;
 
         var action = eventName;
-
-        // conditions under which we should re-run filters
 
         if (
             (propName !== undefined && propName === this.comparator) ||
             contains(this._watched, propName)
-        ) {
-            var alreadyHave = this._filteredGet(model);
-            var accepted = every(this._filters, function (filter) {
-                return filter(model);
-            });
+        ) { //If a property we care about changed
+            alreadyHave = this._filteredGet(model);
+            accepted = this._testModel(model);
 
             if (!alreadyHave && accepted) {
                 action = 'add';
@@ -250,21 +292,29 @@ extend(SubCollection.prototype, Events, underscoreMixins, {
             } else {
                 action = 'ignore';
             }
+        } else if (action === 'add') { //See if we really want to add
+            alreadyHave = this._filteredGet(model);
+            if (!this._testModel(model) || alreadyHave) {
+                action = 'ignore';
+            }
         }
 
-        if (
-            action === 'remove' ||
-            action === 'reset' ||
-            (action === 'add' && !contains(this.rootModels, model))
-        ) {
-            this._runFilters(model);
+        if (action === 'add') {
+            if (this._filtered.length === 0) {
+                this._runFilters();
+            } else {
+                this._addModel(model);
+            }
+        } else if (action === 'remove') {
+            this._removeModel(model);
+        } else if (action === 'reset') {
+            //TODO make init share this functionality
+            this._runFilters();
         }
-        //reset is a problem
-        // conditions under which we should proxy the events
-        if (
-            (!contains(['add', 'remove'], eventName) && this.contains(model)) ||
-            eventName === 'reset'
-        ) {
+        this._sliceModels();
+
+        if (action === 'reset') {
+            //After slicing
             this.trigger.apply(this, arguments);
         }
     },
@@ -276,10 +326,15 @@ extend(SubCollection.prototype, Events, underscoreMixins, {
         }
     },
 
-    _resetIndexes: function () {
-        this._indexes = {};
+    _removeIndex: function (newIndexes, model) {
+        for (var name in this._indexes) {
+            delete this._indexes[name][model[name] || (model.get && model.get(name))];
+        }
+    },
+
+    _resetIndexes: function (newIndexes) {
         for (var i = 0; i < this.indexes.length; i++) {
-            this._indexes[this.indexes[i]] = {};
+            newIndexes[this.indexes[i]] = {};
         }
     }
 });
