@@ -10,6 +10,7 @@ var flatten = require('amp-flatten');
 var isArray = require('amp-is-array');
 var isEqual = require('amp-is-object-equal');
 var keys = require('amp-keys');
+var unique = require('amp-unique');
 var reduce = require('amp-reduce');
 var underscoreMixins = require('ampersand-collection-underscore-mixin');
 var slice = Array.prototype.slice;
@@ -125,7 +126,7 @@ extend(SubCollection.prototype, Events, underscoreMixins, {
 
     // adds a property or array of properties to watch, ensures uniquness.
     _watch: function (item) {
-        this._watched = flatten([this._watched, item]);
+        this._watched = unique(flatten([this._watched, item]));
     },
 
     // removes a watched property
