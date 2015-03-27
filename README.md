@@ -1,5 +1,9 @@
 # ampersand-subcollection
 
+Lead Maintainer: [Michael Garvin](https://github.com/wraithgar)
+
+#overview
+
 Filtered subset of a collection that emits events like a collection.
 
 Often for one part of an app you want a whole collection of models, but for another you want some sort of filtered subcollection. That's what this is for. It gives you a "pseudo collection" that behaves much like a full collections, but really is a subset.
