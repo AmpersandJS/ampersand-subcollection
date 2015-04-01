@@ -7,19 +7,29 @@
     "url": "https://github.com/ampersandjs/ampersand-subcollection/issues"
   },
   "files": [
-      "ampersand-subcollection.js"
+    "ampersand-subcollection.js"
   ],
   "dependencies": {
     "ampersand-class-extend": "^1.0.0",
     "ampersand-collection-underscore-mixin": "^1.0.0",
     "ampersand-events": "^1.1.1",
     "ampersand-version": "^1.0.0",
-    "underscore": "^1.6.0"
+    "lodash.assign": "^3.0.0",
+    "lodash.difference": "^3.1.0",
+    "lodash.foreach": "^3.0.2",
+    "lodash.includes": "^3.1.0",
+    "lodash.isarray": "^3.0.1",
+    "lodash.isequal": "^3.0.1",
+    "lodash.keys": "^3.0.5",
+    "lodash.reduce": "^3.1.0",
+    "lodash.sortby": "^3.1.0",
+    "lodash.union": "^3.1.0"
   },
   "devDependencies": {
     "ampersand-collection": "~0.2.3",
     "ampersand-state": "~0.3.1",
     "jshint": "^2.5.5",
+    "lodash": "^3.6.0",
     "precommit-hook": "^1.0.7",
     "run-browser": "^1.3.1",
     "tap-spec": "^0.2.1",
