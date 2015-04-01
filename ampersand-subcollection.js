@@ -1,6 +1,6 @@
 /*$AMPERSAND_VERSION*/
 var _ = require('underscore');
-var Events = require('backbone-events-standalone');
+var Events = require('ampersand-events');
 var classExtend = require('ampersand-class-extend');
 var underscoreMixins = require('ampersand-collection-underscore-mixin');
 var slice = Array.prototype.slice;
