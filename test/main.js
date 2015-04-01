@@ -3,7 +3,7 @@ var mixins = require('ampersand-collection-underscore-mixin');
 var Collection = require('ampersand-collection').extend(mixins);
 var SubCollection = require('../ampersand-subcollection');
 var Model = require('ampersand-state');
-var _ = require('underscore');
+var _ = require('lodash');
 
 
 // our widget model
