@@ -6,6 +6,9 @@
   "bugs": {
     "url": "https://github.com/ampersandjs/ampersand-subcollection/issues"
   },
+  "files": [
+      "ampersand-subcollection.js"
+  ],
   "dependencies": {
     "ampersand-class-extend": "^1.0.0",
     "ampersand-collection-underscore-mixin": "^1.0.0",
