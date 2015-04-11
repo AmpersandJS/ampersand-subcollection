@@ -93,7 +93,7 @@ assign(SubCollection.prototype, Events, lodashMixins, {
     // proxy `get` method to the underlying collection
     get: function (query, indexName) {
         var model = this.collection.get(query, indexName);
-        if (model && this.contains(model)) return model;
+        if (model && this.includes(model)) return model;
     },
 
     // remove filter if found
@@ -209,7 +209,7 @@ assign(SubCollection.prototype, Events, lodashMixins, {
             this._runFilters();
         }
         // conditions under which we should proxy the events
-        if (!includes(['add', 'remove'], eventName) && this.contains(model)) {
+        if (!includes(['add', 'remove'], eventName) && this.includes(model)) {
             this.trigger.apply(this, arguments);
         }
     }
