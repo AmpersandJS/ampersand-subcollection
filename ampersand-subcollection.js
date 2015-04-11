@@ -1,7 +1,7 @@
 /*$AMPERSAND_VERSION*/
 var Events = require('ampersand-events');
 var classExtend = require('ampersand-class-extend');
-var underscoreMixins = require('ampersand-collection-underscore-mixin');
+var lodashMixins = require('ampersand-collection-lodash-mixin');
 var slice = Array.prototype.slice;
 var assign = require('lodash.assign');
 var difference = require('lodash.difference');
@@ -23,7 +23,7 @@ function SubCollection(collection, spec) {
 }
 
 
-assign(SubCollection.prototype, Events, underscoreMixins, {
+assign(SubCollection.prototype, Events, lodashMixins, {
     // add a filter function directly
     addFilter: function (filter) {
         this.swapFilters([filter], []);
