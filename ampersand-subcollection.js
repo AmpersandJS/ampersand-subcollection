@@ -1,7 +1,7 @@
 /*$AMPERSAND_VERSION*/
 var Events = require('ampersand-events');
 var classExtend = require('ampersand-class-extend');
-var underscoreMixins = require('ampersand-collection-underscore-mixin');
+var lodashMixins = require('ampersand-collection-lodash-mixin');
 var slice = Array.prototype.slice;
 var assign = require('lodash.assign');
 var difference = require('lodash.difference');
@@ -23,7 +23,7 @@ function SubCollection(collection, spec) {
 }
 
 
-assign(SubCollection.prototype, Events, underscoreMixins, {
+assign(SubCollection.prototype, Events, lodashMixins, {
     // add a filter function directly
     addFilter: function (filter) {
         this.swapFilters([filter], []);
@@ -93,7 +93,7 @@ assign(SubCollection.prototype, Events, underscoreMixins, {
     // proxy `get` method to the underlying collection
     get: function (query, indexName) {
         var model = this.collection.get(query, indexName);
-        if (model && this.contains(model)) return model;
+        if (model && this.includes(model)) return model;
     },
 
     // remove filter if found
@@ -209,7 +209,7 @@ assign(SubCollection.prototype, Events, underscoreMixins, {
             this._runFilters();
         }
         // conditions under which we should proxy the events
-        if (!includes(['add', 'remove'], eventName) && this.contains(model)) {
+        if (!includes(['add', 'remove'], eventName) && this.includes(model)) {
             this.trigger.apply(this, arguments);
         }
     }

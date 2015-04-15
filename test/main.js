@@ -1,5 +1,5 @@
 var test = require('tape');
-var mixins = require('ampersand-collection-underscore-mixin');
+var mixins = require('ampersand-collection-lodash-mixin');
 var Collection = require('ampersand-collection').extend(mixins);
 var SubCollection = require('../ampersand-subcollection');
 var Model = require('ampersand-state');
@@ -379,7 +379,7 @@ test('reset works correctly/efficiently when passed to configure', function (t) 
     });
     var itemsRemoved = [];
     var itemsAdded = [];
-    
+
     t.equal(sub.length, 50, 'should be 50 that match initial filter');
 
     sub.on('remove', function (model) {
