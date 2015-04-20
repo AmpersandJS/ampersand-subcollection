@@ -6,7 +6,7 @@ This module is deprecated and further non-security updates will not be
 done on it.  The functionality here has been broken into two modules:
 
 [ampersand-filtered-subcollection](https://github.com/AmpersandJS/ampersand-filtered-subcollection)
-[ampersand-paginagted-subcollection](https://github.com/AmpersandJS/ampersand-paginated-subcollection)
+[ampersand-paginated-subcollection](https://github.com/AmpersandJS/ampersand-paginated-subcollection)
 
 Please use them instead for new projects, and consider moving to one or
 both of them in your existing ones.
